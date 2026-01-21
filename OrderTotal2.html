@@ -57,6 +57,7 @@
       padding: clamp(12px, 3vw, 22px);
       position: relative;
       overflow-x: hidden;
+      overflow-y: auto;
     }
     body::before{
       content:"";
@@ -196,6 +197,7 @@
     .sideTotals{
       width: 420px;
       min-width: 320px;
+      max-width: 100%;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -450,6 +452,7 @@
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.10);
     }
+    .ordersGrid table{ min-width: 640px; }
     thead th{
       text-align:left;
       font-size: 12px;
@@ -630,8 +633,9 @@
       z-index: 13000;
       background: radial-gradient(1200px 600px at 20% -10%, rgba(228,0,0,0.3), transparent 60%), var(--bg);
       display: grid;
-      place-items: center;
-      padding: 24px;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0;
       overflow: auto;
       -webkit-overflow-scrolling: touch;
     }
@@ -647,16 +651,18 @@
     .homeInner{
       position: relative;
       z-index: 1;
-      width: min(1080px, 100%);
+      width: 100%;
+      max-width: 1200px;
       background: rgba(12,14,18,0.78);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 20px;
-      padding: 20px;
-      box-shadow: 0 18px 45px rgba(0,0,0,0.55);
+      border: 0;
+      border-radius: 0;
+      padding: 0 20px 20px;
+      box-shadow: none;
       display: grid;
       gap: 14px;
       max-height: none;
       overflow: auto;
+      margin: 0 auto;
     }
     .homeTop{
       display:flex;
@@ -681,6 +687,11 @@
       width: auto;
       object-fit: contain;
       opacity: 0.95;
+    }
+    .homeHeroImg{
+      display:grid;
+      gap: 10px;
+      padding-top: 0;
     }
     .homeHeroImg img{
       width: 100%;
@@ -735,6 +746,19 @@
       .sideTotals{ width: 100%; }
       .cardBody{ padding: 14px; }
       .homeIntro{ padding: 14px; }
+      .ordersGrid table{ min-width: 560px; }
+      .brandTitle img{ max-height: 36px; }
+      .badge{ font-size: 10px; padding: 4px 6px; }
+      .bigNumber{ font-size: 20px; }
+      .btnRow button, button{ width: 100%; }
+    }
+    @media (max-width: 520px){
+      .wrap{ width: 100%; }
+      .ordersGrid table{ min-width: 500px; }
+      .totTable td{ font-size: 11px; }
+      .homeLogo{ height: 44px; width: 44px; }
+      .homeSlogan{ height: 34px; }
+      .brandTitle img{ max-height: 32px; }
     }
   </style>
 </head>
@@ -750,7 +774,9 @@
           </div>
         </div>
         <div class="homeHeroImg">
-          <img src="zyl-banner.png" alt="Zhuo Yue Labs banner" />
+          <img src="homepage1.png" alt="Zhuo Yue Labs homepage banner 1" />
+          <img src="homepage2.png" alt="Zhuo Yue Labs homepage banner 2" />
+          <img src="homepage3.png" alt="Zhuo Yue Labs homepage banner 3" />
         </div>
         <div class="homeActions">
           <button class="btnPrimary" id="homeStartBtn2">Start Order</button>
@@ -1040,7 +1066,7 @@
     const heroSlot = document.getElementById("heroSlot");
     hero.onload = () => { heroSlot.style.display = "block"; };
     hero.onerror = () => { heroSlot.style.display = "none"; };
-    hero.src = "zyl-banner.png";
+    hero.src = "homepage1.png";
   })();
 
   /* -----------------------------
