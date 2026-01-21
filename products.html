@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zhuo Yue Labs — Products</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --panel: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.12);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.72);
+      --brand:#e40000;
+      --brand2:#ff2a2a;
+      --radius: 16px;
+      --shadow: 0 18px 45px rgba(0,0,0,0.45);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 22px;
+    }
+    .wrap{ max-width: 1180px; margin: 0 auto; }
+    .hero{
+      background: linear-gradient(135deg, rgba(228,0,0,0.95), rgba(255,42,42,0.75));
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items:center;
+      flex-wrap: wrap;
+    }
+    h1{
+      margin:0;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+    }
+    .ctaRow{
+      display:flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    a.btn, button.btn{
+      border:0;
+      border-radius: 14px;
+      padding: 11px 14px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      color: white;
+      text-decoration: none;
+      cursor:pointer;
+    }
+    .btnPrimary{ background: linear-gradient(135deg, #b30000, #ff2a2a); }
+    .btnGhost{
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.16);
+      color: var(--text);
+    }
+    .panel{
+      margin-top: 16px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+    }
+    .panel h2{
+      margin: 0 0 10px 0;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 800;
+    }
+    .searchRow{
+      display:flex;
+      gap:10px;
+      flex-wrap: wrap;
+      align-items:center;
+    }
+    .searchRow input{
+      flex:1;
+      min-width: 240px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: var(--text);
+      font-size: 14px;
+    }
+    table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 14px;
+      overflow:hidden;
+    }
+    thead th{
+      text-align:left;
+      font-size: 12px;
+      color: rgba(255,255,255,0.78);
+      font-weight: 800;
+      padding: 11px 12px;
+      background: rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      font-family: 'Inter', sans-serif;
+      white-space: nowrap;
+    }
+    tbody td{
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      vertical-align: middle;
+      font-size: 13px;
+      color: var(--text);
+    }
+    tbody tr:hover{ background: rgba(255,255,255,0.03); }
+    .cellMono{ font-family: var(--mono); font-weight: 800; font-size: 12px; color: rgba(255,255,255,0.9); }
+    .muted{ color: var(--muted); }
+    .count{ font-size:12px; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div>
+        <h1>Our Products</h1>
+        <div style="color:rgba(255,255,255,0.88);font-size:13px;">Search or browse, then start your order.</div>
+      </div>
+      <div class="ctaRow">
+        <a class="btn btnGhost" href="OrderTotal2.html">Home</a>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="searchRow">
+        <h2 style="margin:0;">Catalog</h2>
+        <input id="searchBox" type="text" placeholder="Search by name, code, or dose..." autocomplete="off" />
+        <span class="count" id="countLabel"></span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 14%;">Code</th>
+            <th style="width: 42%;">Name</th>
+            <th style="width: 18%;">Dosage</th>
+            <th style="width: 12%;">Type</th>
+            <th style="width: 14%;">Price</th>
+          </tr>
+        </thead>
+        <tbody id="prodBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+  "use strict";
+  const CATALOG_INDIVIDUAL = [
+    { sku: "TR20-S", name: "Tirzepatide 20mg (1 Vial)", cost: 23.63, price: 65.00 },
+    { sku: "TR30-S", name: "Tirzepatide 30mg (1 Vial)", cost: 28.88, price: 80.00 },
+    { sku: "TR40-S", name: "Tirzepatide 40mg (1 Vial)", cost: 34.13, price: 95.00 },
+    { sku: "SM10-S", name: "Semaglutide 10mg (1 Vial)", cost: 21.88, price: 60.00 },
+    { sku: "RT10-S", name: "Retatrutide 10mg (1 Vial)", cost: 23.63, price: 65.00 },
+    { sku: "RT15-S", name: "Retatrutide 15mg (1 Vial)", cost: 30.63, price: 85.00 },
+    { sku: "RT20-S", name: "Retatrutide 20mg (1 Vial)", cost: 39.38, price: 110.00 },
+    { sku: "RT50-S", name: "Retatrutide 50mg (1 Vial)", cost: 78.75, price: 215.00 },
+    { sku: "RT60-S", name: "Retatrutide 60mg (1 Vial)", cost: 96.25, price: 260.00 },
+    { sku: "BBG70-S", name: "Glow 70mg (1 Vial)", cost: 35.00, price: 95.00 },
+    { sku: "KLOW80-S", name: "Klow 80mg (1 Vial)", cost: 35.00, price: 95.00 },
+    { sku: "BB20-S", name: "BPC/TB Blend 20mg (1 Vial)", cost: 35.00, price: 95.00 },
+    { sku: "5AM-S", name: "5-Amino-1mq 50mg (1 Vial)", cost: 26.25, price: 75.00 },
+    { sku: "CP10-S", name: "CJC/IPA Blend 10mg (1 Vial)", cost: 26.25, price: 75.00 },
+    { sku: "SK10-S", name: "Selank 10mg (1 Vial)", cost: 21.88, price: 60.00 },
+    { sku: "KPV10-S", name: "KPV 10mg (1 Vial)", cost: 21.88, price: 60.00 },
+    { sku: "P41-S", name: "PT-141 10mg (1 Vial)", cost: 21.88, price: 60.00 },
+    { sku: "MT1-S", name: "Melanotan 1 10mg (1 Vial)", cost: 26.25, price: 75.00 },
+    { sku: "NJ500-S", name: "NAD+ 500mg (1 Vial)", cost: 21.88, price: 60.00 },
+    { sku: "MS10-S", name: "MOTS-C 10mg (1 Vial)", cost: 21.88, price: 60.00 },
+    { sku: "GT1500-S", name: "Glutathione 1.5g (1 Vial)", cost: 26.25, price: 75.00 },
+    { sku: "TSM10-S", name: "Tesamorelin 10mg (1 Vial)", cost: 35.00, price: 95.00 },
+    { sku: "CU50-S", name: "GHK-Cu 50mg (1 Vial)", cost: 17.50, price: 50.00 },
+    { sku: "MT2-S", name: "Melanotan 2 10mg (1 Vial)", cost: 21.88, price: 60.00 },
+    { sku: "G5K-S", name: "HCG 5000iu (1 Vial)", cost: 26.25, price: 75.00 },
+    { sku: "HOSP", name: "Hospira Water 30ml", cost: 15.00, price: 50.00 },
+    { sku: "LIPO-S", name: "Lipo C 216mg (1 Vial)", cost: 26.25, price: 75.00 },
+    { sku: "H10-S", name: "HGH 10iu (1 Vial)", cost: 0.00, price: 20.00 }
+  ];
+
+  const CATALOG_KITS = [
+    { sku: "RT5", name: "Retatrutide 5mg", cost: 50.00, price: 129.00 },
+    { sku: "RT10", name: "Retatrutide 10mg", cost: 76.00, price: 207.00 },
+    { sku: "RT15", name: "Retatrutide 15mg", cost: 105.00, price: 283.50 },
+    { sku: "RT20", name: "Retatrutide 20mg", cost: 130.00, price: 379.50 },
+    { sku: "RT30", name: "Retatrutide 30mg", cost: 195.00, price: 448.50 },
+    { sku: "RT50", name: "Retatrutide 50mg", cost: 270.00, price: 559.50 },
+    { sku: "RT60", name: "Retatrutide 60mg", cost: 325.00, price: 607.50 },
+    { sku: "SM5", name: "Semaglutide 5mg", cost: 32.00, price: 85.50 },
+    { sku: "SM10", name: "Semaglutide 10mg", cost: 42.00, price: 111.00 },
+    { sku: "SM15", name: "Semaglutide 15mg", cost: 54.00, price: 145.50 },
+    { sku: "SM20", name: "Semaglutide 20mg", cost: 82.00, price: 172.50 },
+    { sku: "SM30", name: "Semaglutide 30mg", cost: 99.00, price: 207.00 },
+    { sku: "SM50", name: "Semaglutide 50mg", cost: 125.00, price: 250.00 },
+    { sku: "TR5", name: "Tirzepatide 5mg", cost: 30.00, price: 76.50 },
+    { sku: "TR10", name: "Tirzepatide 10mg", cost: 48.00, price: 120.00 },
+    { sku: "TR20", name: "Tirzepatide 20mg", cost: 78.00, price: 189.00 },
+    { sku: "TR30", name: "Tirzepatide 30mg", cost: 107.00, price: 223.50 },
+    { sku: "TR40", name: "Tirzepatide 40mg", cost: 136.00, price: 276.00 },
+    { sku: "TR50", name: "Tirzepatide 50mg", cost: 166.00, price: 345.00 },
+    { sku: "TR60", name: "Tirzepatide 60mg", cost: 191.00, price: 396.00 },
+    { sku: "TR80", name: "Tirzepatide 80mg", cost: 288.00, price: 576.00 },
+    { sku: "TR100", name: "Tirzepatide 100mg", cost: 321.00, price: 642.00 },
+    { sku: "Adamax5", name: "Adamax 5mg", cost: 60.00, price: 120.00 },
+    { sku: "Adamax10", name: "Adamax 10mg", cost: 95.00, price: 190.00 },
+    { sku: "AE1", name: "ACE-031 1mg", cost: 196.00, price: 392.00 },
+    { sku: "AP5", name: "Adipotide 5mg", cost: 115.00, price: 230.00 },
+    { sku: "AP10", name: "Adipotide 10mg", cost: 166.00, price: 332.00 },
+    { sku: "AR50", name: "AICAR 50mg", cost: 50.00, price: 100.00 },
+    { sku: "5AM", name: "5-Amino-1mq 5mg", cost: 52.00, price: 138.00 },
+    { sku: "AOD2", name: "AOD9604 2mg", cost: 36.00, price: 72.00 },
+    { sku: "AOD5", name: "AOD9604 5mg", cost: 70.00, price: 140.00 },
+    { sku: "AOD10", name: "AOD9604 10mg", cost: 123.00, price: 246.00 },
+    { sku: "RA10", name: "Ara-290 10mg", cost: 52.00, price: 104.00 },
+    { sku: "WA3", name: "Acetic Acid 3ml", cost: 8.00, price: 16.00 },
+    { sku: "WA10", name: "Acetic Acid 10ml", cost: 12.00, price: 24.00 },
+    { sku: "BA3", name: "Bacteriostatic Water 3ml", cost: 8.00, price: 16.00 },
+    { sku: "BA10", name: "Bacteriostatic Water 10ml", cost: 12.00, price: 24.00 },
+    { sku: "B7-33-2", name: "B7-33 2mg", cost: 45.00, price: 90.00 },
+    { sku: "BC2", name: "BPC157 2mg", cost: 21.00, price: 42.00 },
+    { sku: "BC5", name: "BPC157 5mg", cost: 31.00, price: 85.50 },
+    { sku: "BC10", name: "BPC157 10mg", cost: 52.00, price: 138.00 },
+    { sku: "BB10", name: "BPC5mg+TB5mg", cost: 82.00, price: 198.00 },
+    { sku: "BB20", name: "BPC10mg+TB10mg", cost: 149.00, price: 379.50 },
+    { sku: "BBG70", name: "Glow (BPC+GHK+TB)", cost: 153.00, price: 390.00 },
+    { sku: "Bron", name: "Bronchogen 20mg", cost: 84.00, price: 168.00 },
+    { sku: "CGL5", name: "Cagrilintide 5mg", cost: 89.00, price: 223.50 },
+    { sku: "CGL10", name: "Cagrilintide 10mg", cost: 140.00, price: 414.00 },
+    { sku: "CS10", name: "Cagrilintide 5+Sema 5", cost: 149.00, price: 298.00 },
+    { sku: "Cardio", name: "Cardiogen 20mg", cost: 81.00, price: 162.00 },
+    { sku: "Cartalax", name: "Cartalax 20mg", cost: 85.00, price: 170.00 },
+    { sku: "Cortagen", name: "Cortagen 20mg", cost: 85.00, price: 170.00 },
+    { sku: "Crystagen", name: "Crystagen 20mg", cost: 60.00, price: 120.00 },
+    { sku: "CND2", name: "CJC-1295 no DAC 2mg", cost: 38.00, price: 76.00 },
+    { sku: "CND5", name: "CJC-1295 no DAC 5mg", cost: 77.00, price: 172.50 },
+    { sku: "CND10", name: "CJC-1295 no DAC 10mg", cost: 113.00, price: 310.50 },
+    { sku: "CD2", name: "CJC-1295 DAC 2mg", cost: 50.00, price: 100.00 },
+    { sku: "CD5", name: "CJC-1295 DAC 5mg", cost: 120.00, price: 292.50 },
+    { sku: "DS2", name: "DSIP 2mg", cost: 20.00, price: 40.00 },
+    { sku: "DS10", name: "DSIP 10mg", cost: 70.00, price: 140.00 },
+    { sku: "Dula5", name: "Dulaglutide 5mg", cost: 145.00, price: 290.00 },
+    { sku: "Dula10", name: "Dulaglutide 10mg", cost: 238.00, price: 476.00 },
+    { sku: "ET10", name: "Epithalon 10mg", cost: 35.00, price: 118.50 },
+    { sku: "ET50", name: "Epithalon 50mg", cost: 135.00, price: 345.00 },
+    { sku: "FOX10", name: "FOX04-DRI 10mg", cost: 330.00, price: 690.00 },
+    { sku: "GDF8", name: "GDF-8 1mg", cost: 161.00, price: 322.00 },
+    { sku: "CU50", name: "GHK-CU 50mg", cost: 28.00, price: 60.00 },
+    { sku: "CU100", name: "GHK-CU 100mg", cost: 52.00, price: 120.00 },
+    { sku: "GTT500", name: "Glutathione 600mg", cost: 38.00, price: 76.00 },
+    { sku: "GT1500", name: "Glutathione 1500mg", cost: 80.00, price: 145.50 },
+    { sku: "Gonad", name: "Gonadorelin 5mg", cost: 38.00, price: 76.00 },
+    { sku: "G25", name: "GHRP-2 5mg", cost: 22.00, price: 44.00 },
+    { sku: "G210", name: "GHRP-2 10mg", cost: 38.00, price: 76.00 },
+    { sku: "G65", name: "GHRP-6 5mg", cost: 22.00, price: 60.00 },
+    { sku: "G610", name: "GHRP-6 10mg", cost: 38.00, price: 94.50 },
+    { sku: "G5K", name: "HCG 5000iu", cost: 64.00, price: 128.00 },
+    { sku: "G2K", name: "HCG 2000iu", cost: 31.00, price: 62.00 },
+    { sku: "HX2", name: "Hexarelin 2mg", cost: 40.00, price: 80.00 },
+    { sku: "HX5", name: "Hexarelin 5mg", cost: 72.00, price: 172.50 },
+    { sku: "H10", name: "HGH 10iu", cost: 40.00, price: 111.00 },
+    { sku: "H15", name: "HGH 15iu", cost: 67.00, price: 189.00 },
+    { sku: "H24", name: "HGH 24iu", cost: 105.00, price: 210.00 },
+    { sku: "FR2", name: "HGH Frag 176-191 2mg", cost: 39.00, price: 78.00 },
+    { sku: "FR5", name: "HGH Frag 176-191 5mg", cost: 73.00, price: 146.00 },
+    { sku: "G75", name: "HMG 75iu", cost: 58.00, price: 116.00 },
+    { sku: "Hum", name: "Humanin 10mg", cost: 238.00, price: 476.00 },
+    { sku: "IGF01", name: "IGF-1 LR3 0.1mg", cost: 38.00, price: 76.00 },
+    { sku: "IGF1", name: "IGF-1 LR3 1mg", cost: 152.00, price: 304.00 },
+    { sku: "IGD", name: "IGF-DES 1mg", cost: 35.00, price: 70.00 },
+    { sku: "IP5", name: "Ipamorelin 5mg", cost: 39.00, price: 75.00 },
+    { sku: "IP10", name: "Ipamorelin 10mg", cost: 64.00, price: 154.50 },
+    { sku: "KS5", name: "KissPeptin-10 5mg", cost: 39.00, price: 78.00 },
+    { sku: "KS10", name: "KissPeptin-10 10mg", cost: 69.00, price: 138.00 },
+    { sku: "KPV10", name: "KPV 10mg", cost: 60.00, price: 120.00 },
+    { sku: "KLOW80", name: "Klow80", cost: 179.00, price: 483.00 },
+    { sku: "LC200", name: "L-Carnitine 200mg", cost: 30.00, price: 60.00 },
+    { sku: "LC400", name: "L-Carnitine 400mg", cost: 40.00, price: 0.00 },
+    { sku: "LC600", name: "L-Carnitine 600mg", cost: 42.00, price: 84.00 },
+    { sku: "LC1200", name: "L-Carnitine 1200mg", cost: 50.00, price: 100.00 },
+    { sku: "MIC", name: "Lipo-C (MIC+B12)", cost: 80.00, price: 160.00 },
+    { sku: "Lemon", name: "Lemon Bottle", cost: 52.00, price: 138.00 },
+    { sku: "Lira5", name: "Liraglutide 5mg", cost: 69.00, price: 138.00 },
+    { sku: "Lira10", name: "Liraglutide 10mg", cost: 128.00, price: 256.00 },
+    { sku: "Lira30", name: "Liraglutide 30mg", cost: 324.00, price: 648.00 },
+    { sku: "LL37", name: "LL37 5mg", cost: 69.00, price: 138.00 },
+    { sku: "MAZ5", name: "Mazdutide 5mg", cost: 81.00, price: 162.00 },
+    { sku: "MAZ10", name: "Mazdutide 10mg", cost: 60.00, price: 361.50 },
+    { sku: "MAZ20", name: "Mazdutide 20mg", cost: 273.00, price: 546.00 },
+    { sku: "MT1", name: "Melanotan 1", cost: 41.00, price: 82.00 },
+    { sku: "MT2", name: "Melanotan 2", cost: 41.00, price: 82.00 },
+    { sku: "FM2", name: "MGF 2mg", cost: 33.00, price: 66.00 },
+    { sku: "MS10", name: "MOTS-C 10mg", cost: 50.00, price: 129.00 },
+    { sku: "MS40", name: "MOTS-C 40mg", cost: 145.00, price: 360.00 },
+    { sku: "NJ100", name: "NAD+ 100mg", cost: 41.00, price: 82.00 },
+    { sku: "NJ500", name: "NAD+ 500mg", cost: 77.00, price: 154.00 },
+    { sku: "OT10", name: "Oxytocin 10mg", cost: 65.00, price: 130.00 },
+    { sku: "P21", name: "P21 5mg", cost: 255.00, price: 510.00 },
+    { sku: "PIN10", name: "Pinealon 10mg", cost: 49.00, price: 98.00 },
+    { sku: "PTD", name: "PTD-DBM 1mg", cost: 51.00, price: 102.00 },
+    { sku: "P41", name: "PT-141 10mg", cost: 56.00, price: 112.00 },
+    { sku: "PE10", name: "PE-22-28 10mg", cost: 68.00, price: 136.00 },
+    { sku: "FMP2", name: "PEG-MGF 2mg", cost: 68.00, price: 136.00 },
+    { sku: "SM02", name: "Sermorelin 2mg", cost: 45.00, price: 90.00 },
+    { sku: "SM05", name: "Sermorelin 5mg", cost: 50.00, price: 138.00 },
+    { sku: "SM010", name: "Sermorelin 10mg", cost: 128.00, price: 207.00 },
+    { sku: "2S10", name: "SS-31 10mg", cost: 70.00, price: 189.00 },
+    { sku: "2S50", name: "SS-31 50mg", cost: 273.00, price: 705.00 },
+    { sku: "XA5", name: "Semax 5mg", cost: 40.00, price: 75.00 },
+    { sku: "XA10", name: "Semax 10mg", cost: 58.00, price: 111.00 },
+    { sku: "SK5", name: "Selank 5mg", cost: 40.00, price: 85.50 },
+    { sku: "SK10", name: "Selank 10mg", cost: 58.00, price: 129.00 },
+    { sku: "NP810", name: "SNAP-8 10mg", cost: 35.00, price: 75.00 },
+    { sku: "332", name: "SLU-PP-332 5mg", cost: 81.00, price: 162.00 },
+    { sku: "SUR10", name: "Survodutide 10mg", cost: 187.00, price: 600.00 },
+    { sku: "TB5", name: "TB500 5mg", cost: 64.00, price: 154.50 },
+    { sku: "TB10", name: "TB500 10mg", cost: 124.00, price: 276.00 },
+    { sku: "TSM2", name: "Tesamorelin 2mg", cost: 40.00, price: 80.00 },
+    { sku: "TSM5", name: "Tesamorelin 5mg", cost: 80.00, price: 207.00 },
+    { sku: "TSM10", name: "Tesamorelin 10mg", cost: 147.00, price: 379.50 },
+    { sku: "TSM20", name: "Tesamorelin 20mg", cost: 290.00, price: 580.00 },
+    { sku: "TY", name: "Thymalin 10mg", cost: 55.00, price: 110.00 },
+    { sku: "TA2", name: "Thymosin Alpha-1 2mg", cost: 32.00, price: 64.00 },
+    { sku: "TA5", name: "Thymosin Alpha-1 5mg", cost: 89.00, price: 178.00 },
+    { sku: "TA10", name: "Thymosin Alpha-1 10mg", cost: 128.00, price: 256.00 },
+    { sku: "VIP10", name: "VIP 10mg", cost: 110.00, price: 220.00 },
+    { sku: "Ves", name: "Vesugen 10mg", cost: 55.00, price: 110.00 },
+    { sku: "Pira", name: "Piracetam 800mg", cost: 0.00, price: 120.00 },
+    { sku: "Ani", name: "Aniracetam 200mg", cost: 0.00, price: 180.00 },
+    { sku: "Oxi", name: "Oxiracetam 750mg", cost: 0.00, price: 150.00 },
+    { sku: "Prami", name: "Pramiracetam 300mg", cost: 0.00, price: 220.00 },
+    { sku: "PhenP", name: "Phenylpiracetam 100mg", cost: 0.00, price: 250.00 },
+    { sku: "Colu", name: "Coluracetam 20mg", cost: 0.00, price: 280.00 },
+    { sku: "Nefi", name: "Nefiracetam 400mg", cost: 0.00, price: 200.00 },
+    { sku: "Leve", name: "Levetiracetam 500mg", cost: 0.00, price: 160.00 },
+    { sku: "Faso", name: "Fasoracetam 50mg", cost: 0.00, price: 240.00 },
+    { sku: "Noop", name: "Noopept 10mg", cost: 0.00, price: 180.00 },
+    { sku: "Pheni", name: "Phenibut 250mg", cost: 0.00, price: 140.00 },
+    { sku: "Centro", name: "Centrophenoxine 300mg", cost: 0.00, price: 170.00 },
+    { sku: "Cereb", name: "Cerebrolysin 10mg", cost: 0.00, price: 140.00 }
+  ];
+
+  function nnum(v){ const x = Number(v); return Number.isFinite(x) ? x : 0; }
+  function money(n){ return "$" + nnum(n).toFixed(2); }
+  function norm(s){ return String(s || "").trim().toLowerCase(); }
+  function tokenize(q){ return norm(q).split(/\s+/).filter(Boolean); }
+  function doseFromName(name){
+    const m = String(name).match(/\b(\d+(?:\.\d+)?)\s*(mg|iu|ml|g)\b/i);
+    return m ? (m[1] + " " + m[2].toUpperCase()) : "—";
+  }
+
+  const merged = [
+    ...CATALOG_INDIVIDUAL.map(it => ({ ...it, type: "Single" })),
+    ...CATALOG_KITS.map(it => ({ ...it, type: "Kit" })),
+  ];
+
+  const tbody = document.getElementById("prodBody");
+  const searchBox = document.getElementById("searchBox");
+  const countLabel = document.getElementById("countLabel");
+
+  function matches(item, tokens){
+    if (!tokens.length) return true;
+    const hay = norm(item.sku + " " + item.name + " " + item.type + " " + doseFromName(item.name));
+    return tokens.every(t => hay.includes(t));
+  }
+
+  function render(list){
+    tbody.innerHTML = "";
+    if (!list.length){
+      const tr = document.createElement("tr");
+      const td = document.createElement("td");
+      td.colSpan = 5;
+      td.className = "muted";
+      td.textContent = "No results. Try another search.";
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    } else {
+      list.forEach(it => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td class="cellMono">${it.sku}</td>
+          <td>${it.name}</td>
+          <td class="muted">${doseFromName(it.name)}</td>
+          <td class="muted">${it.type}</td>
+          <td class="cellMono">${money(it.price)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+    countLabel.textContent = `Showing ${list.length} of ${merged.length}`;
+  }
+
+  function applyFilter(){
+    const tokens = tokenize(searchBox.value);
+    const filtered = merged.filter(it => matches(it, tokens));
+    render(filtered);
+  }
+
+  searchBox.addEventListener("input", applyFilter);
+  render(merged);
+  </script>
+</body>
+</html>

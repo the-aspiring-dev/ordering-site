@@ -1,0 +1,1905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Zhuo Yue Labs — Master Order Tool (Fixed Shipping + Perfect Calc)</title>
+
+  <!-- PDF libs -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.29/jspdf.plugin.autotable.min.js"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#0b0d10;
+      --panel: rgba(255,255,255,0.06);
+      --panel2: rgba(255,255,255,0.09);
+      --border: rgba(255,255,255,0.12);
+      --text: rgba(255,255,255,0.92);
+      --muted: rgba(255,255,255,0.70);
+      --muted2: rgba(255,255,255,0.55);
+      --brand:#e40000;
+      --brand2:#ff2a2a;
+      --good:#1ed760;
+      --warn:#ffcc00;
+      --bad:#ff4d4d;
+      --shadow: 0 18px 45px rgba(0,0,0,0.45);
+      --shadow2: 0 10px 25px rgba(0,0,0,0.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --radius: 16px;
+      --focus: 0 0 0 3px rgba(228,0,0,0.25);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:
+        radial-gradient(1200px 600px at 15% -10%, rgba(228,0,0,0.35), transparent 55%),
+        radial-gradient(900px 500px at 90% 10%, rgba(255,42,42,0.16), transparent 55%),
+        radial-gradient(800px 600px at 40% 110%, rgba(255,255,255,0.06), transparent 60%),
+        var(--bg);
+      color: var(--text);
+      padding: 22px;
+    }
+
+    .wrap{ max-width: 1320px; margin: 0 auto; }
+
+    .topbar{
+      display:flex;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 18px;
+    }
+
+    .brand{
+      flex: 1;
+      background: linear-gradient(135deg, rgba(228,0,0,0.95), rgba(255,42,42,0.75));
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 18px 18px 16px 18px;
+      position: relative;
+      overflow:hidden;
+    }
+    .brand::after{
+      content:"";
+      position:absolute;
+      inset:-30% -10% auto auto;
+      width: 340px;
+      height: 340px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.18);
+      transform: rotate(10deg);
+    }
+
+    .brandTop{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 12px;
+      position:relative;
+      z-index:1;
+    }
+
+    .brandTitle{
+      font-family: Montserrat, Inter, sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      font-size: 26px;
+      line-height: 1.1;
+      margin:0;
+      text-transform: uppercase;
+    }
+
+    .brandSub{
+      margin-top: 6px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.86);
+      display:flex;
+      gap:10px;
+      flex-wrap: wrap;
+      align-items:center;
+      position:relative;
+      z-index:1;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.18);
+      font-weight: 700;
+    }
+    .pill b{ font-family: var(--mono); font-weight: 800; }
+
+    .logoSlot{
+      width: 88px;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.22);
+      background: rgba(0,0,0,0.18);
+      overflow:hidden;
+      flex-shrink:0;
+      display:none; /* auto-shown if logo loads */
+    }
+    .logoSlot img{ width:100%; height:100%; object-fit: contain; display:block; padding:6px; }
+
+    .heroSlot{
+      margin-top: 10px;
+      background: rgba(0,0,0,0.18);
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 14px;
+      overflow:hidden;
+      display:none; /* auto-shown if image loads */
+      position:relative;
+      z-index:1;
+    }
+    .heroSlot img{ width:100%; display:block; }
+
+    .helpLine{
+      margin-top: 10px;
+      color: rgba(255,255,255,0.86);
+      font-size: 12px;
+      line-height: 1.35;
+      position:relative;
+      z-index:1;
+    }
+    .mini{
+      font-size: 11px;
+      color: rgba(255,255,255,0.75);
+      font-family: var(--mono);
+    }
+
+    .rightTools{
+      width: 410px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      padding: 14px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: 1.25fr 0.95fr;
+      gap: 16px;
+      align-items:start;
+    }
+
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow2);
+      overflow:hidden;
+    }
+
+    .cardHeader{
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+    }
+    .cardHeader h2{
+      font-family: Montserrat, Inter, sans-serif;
+      margin:0;
+      font-size: 13px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.85);
+      font-weight: 900;
+    }
+    .cardBody{ padding: 16px; }
+
+    label{
+      display:block;
+      font-size: 12px;
+      font-weight: 800;
+      color: rgba(255,255,255,0.78);
+      margin-bottom: 6px;
+    }
+
+    input, select, textarea{
+      width: 100%;
+      background: rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 12px;
+      color: var(--text);
+      padding: 10px 11px;
+      outline:none;
+      transition: box-shadow .12s ease, border-color .12s ease;
+      font-size: 13px;
+    }
+    input:focus, select:focus, textarea:focus{
+      border-color: rgba(228,0,0,0.55);
+      box-shadow: var(--focus);
+    }
+    input[readonly]{ opacity: 0.85; cursor: not-allowed; }
+
+    .row2{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    .statusToggle{ display:flex; gap: 8px; margin-top: 2px; }
+    .statusBtn{
+      flex: 1;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.25);
+      color: rgba(255,255,255,0.82);
+      padding: 10px 10px;
+      font-weight: 900;
+      font-size: 12px;
+      cursor:pointer;
+      transition: transform .05s ease, background .12s ease, border-color .12s ease;
+      user-select:none;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-family: Montserrat, Inter, sans-serif;
+    }
+    .statusBtn:active{ transform: translateY(1px); }
+    .statusBtn.active.pending{ background: rgba(255,204,0,0.16); border-color: rgba(255,204,0,0.35); color: rgba(255,240,180,0.98);}
+    .statusBtn.active.completed{ background: rgba(30,215,96,0.16); border-color: rgba(30,215,96,0.35); color: rgba(210,255,230,0.98);}
+
+    .inlineCheck{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.20);
+    }
+    .inlineCheck input[type="checkbox"]{
+      width: 18px;
+      height: 18px;
+      margin:0;
+      accent-color: var(--brand);
+    }
+    .inlineCheck .txt{
+      font-size: 12px;
+      color: rgba(255,255,255,0.84);
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    .divider{ height:1px; background: rgba(255,255,255,0.12); margin: 10px 0; }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 5px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(0,0,0,0.22);
+      font-weight: 900;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: rgba(255,255,255,0.85);
+      letter-spacing: 0.2px;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .totals{ display:grid; gap: 12px; }
+    .totCard{
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+    .totTitle{
+      font-family: Montserrat, Inter, sans-serif;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-size: 12px;
+      color: rgba(255,255,255,0.82);
+      margin: 0 0 10px 0;
+      display:flex;
+      align-items:center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .totTable{
+      width:100%;
+      border-collapse: collapse;
+      margin:0;
+      border: 0;
+    }
+    .totTable td{
+      padding: 7px 0;
+      border:0;
+      font-size: 12px;
+      color: rgba(255,255,255,0.80);
+    }
+    .totTable td:last-child{
+      text-align:right;
+      font-family: var(--mono);
+      font-weight: 900;
+      font-size: 13px;
+      color: rgba(255,255,255,0.92);
+    }
+    .bigNumber{
+      font-family: Montserrat, Inter, sans-serif;
+      font-weight: 900;
+      letter-spacing: 0.5px;
+      font-size: 22px;
+      margin-top: 8px;
+    }
+
+    .searchWrap{ position: relative; }
+    .searchResults{
+      position:absolute;
+      top: calc(100% + 6px);
+      left:0;
+      right:0;
+      z-index: 50;
+      background: rgba(15,17,22,0.96);
+      border: 1px solid rgba(255,255,255,0.16);
+      border-radius: 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      overflow:hidden;
+      max-height: 320px;
+      display:none;
+    }
+    .resultItem{
+      padding: 10px 12px;
+      cursor:pointer;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      display:flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items:flex-start;
+    }
+    .resultItem:hover{ background: rgba(228,0,0,0.10); }
+    .resultLeft{
+      display:flex;
+      flex-direction:column;
+      gap: 3px;
+      min-width: 0;
+    }
+    .sku{
+      font-family: var(--mono);
+      font-weight: 900;
+      color: rgba(255,255,255,0.92);
+      font-size: 12px;
+    }
+    .rName{
+      color: rgba(255,255,255,0.85);
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      max-width: 720px;
+    }
+    .rMeta{
+      color: rgba(255,255,255,0.62);
+      font-size: 11px;
+      font-family: var(--mono);
+    }
+    .resultRight{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap: 4px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(255,255,255,0.72);
+      flex-shrink:0;
+    }
+
+    table{
+      width:100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      overflow:hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.10);
+    }
+    thead th{
+      text-align:left;
+      font-size: 12px;
+      color: rgba(255,255,255,0.78);
+      font-weight: 900;
+      padding: 12px 12px;
+      background: rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.10);
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      font-family: Montserrat, Inter, sans-serif;
+    }
+    tbody td{
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      vertical-align: middle;
+      font-size: 13px;
+    }
+    tbody tr:hover{ background: rgba(255,255,255,0.03); }
+
+    .cellInput{
+      width: 100%;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.90);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .qtyInput{
+      width: 70px;
+      text-align: right;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.10);
+      color: rgba(255,255,255,0.92);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .btnRow{
+      display:grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    button{
+      border: 0;
+      border-radius: 14px;
+      padding: 12px 12px;
+      cursor:pointer;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+      font-family: Montserrat, Inter, sans-serif;
+      font-size: 12px;
+      transition: transform .06s ease, filter .12s ease;
+      user-select:none;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .btnPrimary{ background: linear-gradient(135deg, var(--brand), var(--brand2)); color:white; }
+    .btnGood{ background: linear-gradient(135deg, rgba(30,215,96,0.95), rgba(30,215,96,0.65)); color: #06210f; }
+    .btnAlt{ background: linear-gradient(135deg, rgba(120,80,255,0.95), rgba(120,80,255,0.65)); color: white; }
+
+    .removeBtn{
+      background: rgba(255,77,77,0.12);
+      border: 1px solid rgba(255,77,77,0.22);
+      color: rgba(255,220,220,0.98);
+      padding: 8px 10px;
+      border-radius: 12px;
+      font-weight: 900;
+      font-size: 11px;
+      font-family: Montserrat, Inter, sans-serif;
+      cursor:pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(15,17,22,0.96);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: 0 18px 40px rgba(0,0,0,0.55);
+      color: rgba(255,255,255,0.92);
+      padding: 10px 12px;
+      border-radius: 14px;
+      display:none;
+      gap: 10px;
+      align-items:center;
+      max-width: min(720px, calc(100% - 30px));
+      font-size: 12px;
+      z-index: 9999;
+    }
+    .toast .dot{
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--brand);
+      flex-shrink:0;
+    }
+    .toast .msg{
+      overflow:hidden;
+      white-space:nowrap;
+      text-overflow: ellipsis;
+      font-weight: 800;
+      letter-spacing: 0.2px;
+    }
+
+    @media (max-width: 1100px){
+      .topbar{ flex-direction: column; }
+      .rightTools{ width: 100%; }
+      .grid{ grid-template-columns: 1fr; }
+      .btnRow{ grid-template-columns: 1fr; }
+      .rName{ max-width: 520px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brandTop">
+          <div>
+            <h1 class="brandTitle">Zhuo Yue Labs — Order Tool</h1>
+            <div class="brandSub">
+              <span class="pill">Version <b>4.2</b> (Shipping Billed Correctly)</span>
+              <span class="pill">Exports: <b>LaTeX</b> + <b>PDF</b></span>
+              <span class="pill">Calculator: <b>Perfect</b></span>
+            </div>
+          </div>
+          <div class="logoSlot" id="logoSlot">
+            <img id="logoImg" alt="ZYL Logo" />
+          </div>
+        </div>
+
+        <div class="heroSlot" id="heroSlot">
+          <img id="heroImg" alt="ZYL Banner" />
+        </div>
+
+        <div class="helpLine">
+          Optional images: put <span class="mini">zyl-logo.png</span> and/or <span class="mini">zyl-banner.png</span> in the same folder as this HTML to auto-load them.
+        </div>
+      </div>
+
+      <div class="rightTools">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;">
+          <div>
+            <div style="font-family:Montserrat,Inter,sans-serif;font-weight:900;letter-spacing:.5px;text-transform:uppercase;font-size:12px;color:rgba(255,255,255,.85);">
+              Live Totals
+            </div>
+            <div class="mini">Customer Total Due includes shipping charge (if billed).</div>
+          </div>
+          <div class="badge" id="activeVendorBadge">Vendor: Lee Lucy</div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="totals">
+          <div class="totCard">
+            <div class="totTitle">
+              Customer
+              <span class="badge" id="payBadge">Pay: Pending</span>
+            </div>
+            <table class="totTable">
+              <tr><td>Items Subtotal</td><td id="custItemsSubtotal">$0.00</td></tr>
+              <tr><td>Shipping (Charged)</td><td id="custShipCharge">$0.00</td></tr>
+              <tr><td>Discount</td><td id="custDiscount">$0.00</td></tr>
+              <tr><td><b>Total Due</b></td><td id="custTotalDue"><b>$0.00</b></td></tr>
+            </table>
+          </div>
+
+          <div class="totCard">
+            <div class="totTitle">You</div>
+            <table class="totTable">
+              <tr><td>Item Cost</td><td id="youItemsCost">$0.00</td></tr>
+              <tr><td>Shipping Cost</td><td id="youShipCost">$0.00</td></tr>
+              <tr><td><b>Total Cost</b></td><td id="youTotalCost"><b>$0.00</b></td></tr>
+            </table>
+          </div>
+
+          <div class="totCard">
+            <div class="totTitle">Net Profit</div>
+            <div class="bigNumber" id="profitBig">$0.00</div>
+            <div class="mini" id="profitHint">Profit = Customer Total Due − Your Total Cost</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT COLUMN -->
+      <div class="card">
+        <div class="cardHeader">
+          <h2>1. Customer & Payment</h2>
+          <div class="mini">v4.2</div>
+        </div>
+
+        <div class="cardBody">
+          <div class="row2">
+            <div>
+              <label>Vendor Selection</label>
+              <select id="cVendor">
+                <option value="Lee Lucy">Lee Lucy (Default $65)</option>
+                <option value="Zhuo Yue Direct">Zhuo Yue Direct (Default $0)</option>
+                <option value="SubQ">SubQ (Default $50)</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Order Date</label>
+              <input type="text" id="cDate" placeholder="MM/DD/YYYY" />
+            </div>
+          </div>
+
+          <div class="row2">
+            <div>
+              <label>Customer Name</label>
+              <input type="text" id="cName" placeholder="John Doe" />
+            </div>
+            <div>
+              <label>Contact (Phone/Email)</label>
+              <input type="text" id="cContact" placeholder="+1 ..." />
+            </div>
+          </div>
+
+          <div>
+            <label>Full Address</label>
+            <input type="text" id="cAddress" placeholder="123 Street, City, State, Zip" />
+          </div>
+
+          <div class="row2">
+            <div>
+              <label>Payment Method</label>
+              <select id="cPayment">
+                <option value="Zelle">Zelle</option>
+                <option value="Venmo">Venmo</option>
+                <option value="Paypal">Paypal</option>
+                <option value="Crypto">Crypto</option>
+                <option value="Apple Cash">Apple Cash</option>
+                <option value="Cash App">Cash App</option>
+                <option value="Wise">Wise</option>
+                <option value="CC">Credit Card</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Payment Status</label>
+              <div class="statusToggle">
+                <div class="statusBtn active pending" id="btnPending">Pending</div>
+                <div class="statusBtn" id="btnCompleted">Completed</div>
+              </div>
+              <input type="hidden" id="cPayStatus" value="Pending" />
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="row2">
+            <div>
+              <label>Carrier</label>
+              <select id="cCarrier">
+                <option value="Fedex">FedEx</option>
+                <option value="USPS">USPS</option>
+                <option value="UPS">UPS</option>
+                <option value="DHL">DHL</option>
+                <option value="Aramex NZ">Aramex NZ</option>
+              </select>
+            </div>
+
+            <div>
+              <label>Tracking Link</label>
+              <input type="text" id="cTracking" placeholder="Paste full link here" />
+            </div>
+          </div>
+
+          <div class="row3">
+            <div>
+              <label>Shipping Cost (Your Cost) — $</label>
+              <input type="number" id="shipCostInput" value="65.00" min="0" step="0.01" />
+              <div class="mini">Affects your cost + profit.</div>
+            </div>
+
+            <div>
+              <label>Shipping Charge (Customer) — $</label>
+              <input type="number" id="shipChargeInput" value="65.00" min="0" step="0.01" />
+              <div class="mini">Shows on invoice + customer total.</div>
+            </div>
+
+            <div>
+              <label>Discount (Customer) — $</label>
+              <input type="number" id="cDiscount" value="0.00" min="0" step="0.01" />
+              <div class="mini">Clamped so Total Due never goes negative.</div>
+            </div>
+          </div>
+
+          <div class="inlineCheck">
+            <input type="checkbox" id="billShippingCheckbox" checked />
+            <div class="txt">
+              Bill shipping to customer (adds shipping charge to customer total + invoice)
+              <div class="mini">If unchecked: customer shipping is $0.00, your shipping cost still applies.</div>
+            </div>
+          </div>
+
+          <div class="helpLine">
+            Shipping is fixed:
+            <b>Customer Total Due</b> = items + shipping charge (if billed) − discount,
+            <b>Your Total Cost</b> = item cost + your shipping cost.
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: ORDER CONTENTS -->
+      <div class="card">
+        <div class="cardHeader">
+          <h2>2. Order Contents</h2>
+          <div class="mini">Search by SKU or name • click to add</div>
+        </div>
+
+        <div class="cardBody">
+          <div class="searchWrap">
+            <label>Search Inventory (<span id="activeVendorLabel" style="font-weight:900;color:rgba(255,255,255,.92)">Lee Lucy</span>)</label>
+            <input type="text" id="prodSearch" placeholder="Type SKU or Name..." autocomplete="off" />
+            <div class="searchResults" id="searchResults"></div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 14%;">Code</th>
+                <th style="width: 42%;">Item Name</th>
+                <th style="width: 10%;">Qty</th>
+                <th style="width: 16%;">Sourcing ($)</th>
+                <th style="width: 16%;">Selling ($)</th>
+                <th style="width: 2%; text-align:right;">Act</th>
+              </tr>
+            </thead>
+            <tbody id="cartBody"></tbody>
+          </table>
+
+          <div class="btnRow">
+            <button class="btnGood" id="copyBtn">Copy Row for Sheet</button>
+            <button class="btnPrimary" id="latexBtn">Generate LaTeX (Copy)</button>
+            <button class="btnAlt" id="pdfBtn">Download PDF</button>
+          </div>
+
+          <div class="helpLine" style="margin-top:10px;">
+            Exports include: items (with qty), shipping (if billed), discount, and correct Total Due.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <div class="dot"></div>
+    <div class="msg" id="toastMsg">Done</div>
+  </div>
+
+<script>
+"use strict";
+
+  // =================
+  // UI UTILITIES
+  // =================
+  function nnum(v){
+    const x = Number(v);
+    return Number.isFinite(x) ? x : 0;
+  }
+  function money(n){
+    const x = nnum(n);
+    return "$" + x.toFixed(2);
+  }
+  function clamp(n, min, max){
+    n = nnum(n);
+    return Math.min(Math.max(n, min), max);
+  }
+  function toast(msg){
+    const t = document.getElementById("toast");
+    const m = document.getElementById("toastMsg");
+    m.textContent = msg;
+    t.style.display = "flex";
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => { t.style.display = "none"; }, 1600);
+  }
+  function setPayBadge(status){
+    const b = document.getElementById("payBadge");
+    b.textContent = "Pay: " + String(status || "Pending");
+    const completed = (status === "Completed");
+    b.style.borderColor = completed ? "rgba(30,215,96,0.35)" : "rgba(255,204,0,0.35)";
+    b.style.background = completed ? "rgba(30,215,96,0.16)" : "rgba(255,204,0,0.16)";
+    b.style.color = completed ? "rgba(210,255,230,0.98)" : "rgba(255,240,180,0.98)";
+  }
+
+  // Optional image loader
+  (function tryLoadImages(){
+    const logo = document.getElementById("logoImg");
+    const logoSlot = document.getElementById("logoSlot");
+    logo.onload = () => { logoSlot.style.display = "block"; };
+    logo.onerror = () => { logoSlot.style.display = "none"; };
+    logo.src = "zyl-logo.png";
+
+    const hero = document.getElementById("heroImg");
+    const heroSlot = document.getElementById("heroSlot");
+    hero.onload = () => { heroSlot.style.display = "block"; };
+    hero.onerror = () => { heroSlot.style.display = "none"; };
+    hero.src = "zyl-banner.png";
+  })();
+
+  // ==========================
+  // DATASETS (AS PROVIDED)
+  // ==========================
+
+  // LEE LUCY: Sourcing Cost + Selling Price
+  const inv_LeeLucy = [
+    {sku: "RT5", name: "Retatrutide 5mg", cost: 50.00, price: 129.00},
+    {sku: "RT10", name: "Retatrutide 10mg", cost: 76.00, price: 207.00},
+    {sku: "RT15", name: "Retatrutide 15mg", cost: 105.00, price: 283.50},
+    {sku: "RT20", name: "Retatrutide 20mg", cost: 130.00, price: 379.50},
+    {sku: "RT30", name: "Retatrutide 30mg", cost: 195.00, price: 448.50},
+    {sku: "RT50", name: "Retatrutide 50mg", cost: 270.00, price: 559.50},
+    {sku: "RT60", name: "Retatrutide 60mg", cost: 325.00, price: 607.50},
+    {sku: "SM5", name: "Semaglutide 5mg", cost: 32.00, price: 85.50},
+    {sku: "SM10", name: "Semaglutide 10mg", cost: 42.00, price: 111.00},
+    {sku: "SM15", name: "Semaglutide 15mg", cost: 54.00, price: 145.50},
+    {sku: "SM20", name: "Semaglutide 20mg", cost: 82.00, price: 172.50},
+    {sku: "SM30", name: "Semaglutide 30mg", cost: 99.00, price: 207.00},
+    {sku: "SM50", name: "Semaglutide 50mg", cost: 125.00, price: 250.00},
+    {sku: "TR5", name: "Tirzepatide 5mg", cost: 30.00, price: 76.50},
+    {sku: "TR10", name: "Tirzepatide 10mg", cost: 48.00, price: 120.00},
+    {sku: "TR20", name: "Tirzepatide 20mg", cost: 78.00, price: 189.00},
+    {sku: "TR30", name: "Tirzepatide 30mg", cost: 107.00, price: 223.50},
+    {sku: "TR40", name: "Tirzepatide 40mg", cost: 136.00, price: 276.00},
+    {sku: "TR50", name: "Tirzepatide 50mg", cost: 166.00, price: 345.00},
+    {sku: "TR60", name: "Tirzepatide 60mg", cost: 191.00, price: 396.00},
+    {sku: "TR80", name: "Tirzepatide 80mg", cost: 288.00, price: 576.00},
+    {sku: "TR100", name: "Tirzepatide 100mg", cost: 321.00, price: 642.00},
+    {sku: "Adamax5", name: "Adamax 5mg", cost: 60.00, price: 120.00},
+    {sku: "Adamax10", name: "Adamax 10mg", cost: 95.00, price: 190.00},
+    {sku: "AE1", name: "ACE-031 1mg", cost: 196.00, price: 392.00},
+    {sku: "AP5", name: "Adipotide 5mg", cost: 115.00, price: 230.00},
+    {sku: "AP10", name: "Adipotide 10mg", cost: 166.00, price: 332.00},
+    {sku: "AR50", name: "AICAR 50mg", cost: 50.00, price: 100.00},
+    {sku: "5AM", name: "5-Amino-1mq 5mg", cost: 52.00, price: 138.00},
+    {sku: "AOD2", name: "AOD9604 2mg", cost: 36.00, price: 72.00},
+    {sku: "AOD5", name: "AOD9604 5mg", cost: 70.00, price: 140.00},
+    {sku: "AOD10", name: "AOD9604 10mg", cost: 123.00, price: 246.00},
+    {sku: "RA10", name: "Ara-290 10mg", cost: 52.00, price: 104.00},
+    {sku: "WA3", name: "Acetic Acid 3ml", cost: 8.00, price: 16.00},
+    {sku: "WA10", name: "Acetic Acid 10ml", cost: 12.00, price: 24.00},
+    {sku: "BA3", name: "Bacteriostatic Water 3ml", cost: 8.00, price: 16.00},
+    {sku: "BA10", name: "Bacteriostatic Water 10ml", cost: 12.00, price: 24.00},
+    {sku: "B7-33-2", name: "B7-33 2mg", cost: 45.00, price: 90.00},
+    {sku: "XT100", name: "Botulinum toxin 100iu", cost: 128.00, price: 276.00},
+    {sku: "BC2", name: "BPC157 2mg", cost: 21.00, price: 42.00},
+    {sku: "BC5", name: "BPC157 5mg", cost: 31.00, price: 85.50},
+    {sku: "BC10", name: "BPC157 10mg", cost: 52.00, price: 138.00},
+    {sku: "BB10", name: "BPC5mg+TB5mg", cost: 82.00, price: 198.00},
+    {sku: "BB20", name: "BPC10mg+TB10mg", cost: 149.00, price: 379.50},
+    {sku: "BBG70", name: "BPC10+GHK50+TB10", cost: 157.00, price: 390.00},
+    {sku: "Bron", name: "Bronchogen 20mg", cost: 84.00, price: 168.00},
+    {sku: "CGL5", name: "Cagrilintide 5mg", cost: 89.00, price: 223.50},
+    {sku: "CGL10", name: "Cagrilintide 10mg", cost: 140.00, price: 414.00},
+    {sku: "CS10", name: "Cagrilintide 5+Sema 5", cost: 149.00, price: 298.00},
+    {sku: "Cardio", name: "Cardiogen 20mg", cost: 81.00, price: 162.00},
+    {sku: "Cartalax", name: "Cartalax 20mg", cost: 85.00, price: 170.00},
+    {sku: "Cortagen", name: "Cortagen 20mg", cost: 85.00, price: 170.00},
+    {sku: "Crystagen", name: "Crystagen 20mg", cost: 60.00, price: 120.00},
+    {sku: "CND2", name: "CJC-1295 no DAC 2mg", cost: 38.00, price: 76.00},
+    {sku: "CND5", name: "CJC-1295 no DAC 5mg", cost: 77.00, price: 172.50},
+    {sku: "CND10", name: "CJC-1295 no DAC 10mg", cost: 113.00, price: 310.50},
+    {sku: "CD2", name: "CJC-1295 DAC 2mg", cost: 50.00, price: 100.00},
+    {sku: "CD5", name: "CJC-1295 DAC 5mg", cost: 120.00, price: 292.50},
+    {sku: "DS2", name: "DSIP 2mg", cost: 20.00, price: 40.00},
+    {sku: "DS10", name: "DSIP 10mg", cost: 70.00, price: 140.00},
+    {sku: "Dula5", name: "Dulaglutide 5mg", cost: 145.00, price: 290.00},
+    {sku: "Dula10", name: "Dulaglutide 10mg", cost: 238.00, price: 476.00},
+    {sku: "ET10", name: "Epithalon 10mg", cost: 35.00, price: 118.50},
+    {sku: "ET50", name: "Epithalon 50mg", cost: 135.00, price: 345.00},
+    {sku: "FOX10", name: "FOX04-DRI 10mg", cost: 330.00, price: 690.00},
+    {sku: "GDF8", name: "GDF-8 1mg", cost: 161.00, price: 322.00},
+    {sku: "CU50", name: "GHK-CU 50mg", cost: 28.00, price: 60.00},
+    {sku: "CU100", name: "GHK-CU 100mg", cost: 52.00, price: 120.00},
+    {sku: "GTT500", name: "Glutathione 600mg", cost: 38.00, price: 76.00},
+    {sku: "GT1500", name: "Glutathione 1500mg", cost: 80.00, price: 145.50},
+    {sku: "Gonad", name: "Gonadorelin 5mg", cost: 38.00, price: 76.00},
+    {sku: "G25", name: "GHRP-2 5mg", cost: 22.00, price: 44.00},
+    {sku: "G210", name: "GHRP-2 10mg", cost: 38.00, price: 76.00},
+    {sku: "G65", name: "GHRP-6 5mg", cost: 22.00, price: 60.00},
+    {sku: "G610", name: "GHRP-6 10mg", cost: 38.00, price: 94.50},
+    {sku: "BBG70", name: "Glow (BPC+GHK+TB)", cost: 153.00, price: 390.00},
+    {sku: "G5K", name: "HCG 5000iu", cost: 64.00, price: 128.00},
+    {sku: "G2K", name: "HCG 2000iu", cost: 31.00, price: 62.00},
+    {sku: "HX2", name: "Hexarelin 2mg", cost: 40.00, price: 80.00},
+    {sku: "HX5", name: "Hexarelin 5mg", cost: 72.00, price: 172.50},
+    {sku: "H10", name: "HGH 10iu", cost: 40.00, price: 111.00},
+    {sku: "H15", name: "HGH 15iu", cost: 67.00, price: 189.00},
+    {sku: "H24", name: "HGH 24iu", cost: 105.00, price: 210.00},
+    {sku: "FR2", name: "HGH Frag 176-191 2mg", cost: 39.00, price: 78.00},
+    {sku: "FR5", name: "HGH Frag 176-191 5mg", cost: 73.00, price: 146.00},
+    {sku: "G75", name: "HMG 75iu", cost: 58.00, price: 116.00},
+    {sku: "Hum", name: "Humanin 10mg", cost: 238.00, price: 476.00},
+    {sku: "IGF01", name: "IGF-1 LR3 0.1mg", cost: 38.00, price: 76.00},
+    {sku: "IGF1", name: "IGF-1 LR3 1mg", cost: 152.00, price: 304.00},
+    {sku: "IGD", name: "IGF-DES 1mg", cost: 35.00, price: 70.00},
+    {sku: "IP5", name: "Ipamorelin 5mg", cost: 39.00, price: 75.00},
+    {sku: "IP10", name: "Ipamorelin 10mg", cost: 64.00, price: 154.50},
+    {sku: "KS5", name: "KissPeptin-10 5mg", cost: 39.00, price: 78.00},
+    {sku: "KS10", name: "KissPeptin-10 10mg", cost: 69.00, price: 138.00},
+    {sku: "KPV10", name: "KPV 10mg", cost: 60.00, price: 120.00},
+    {sku: "KLOW80", name: "Klow80", cost: 179.00, price: 483.00},
+    {sku: "LC200", name: "L-Carnitine 200mg", cost: 30.00, price: 60.00},
+    {sku: "LC400", name: "L-Carnitine 400mg", cost: 40.00, price: 0},
+    {sku: "LC600", name: "L-Carnitine 600mg", cost: 42.00, price: 84.00},
+    {sku: "LC1200", name: "L-Carnitine 1200mg", cost: 50.00, price: 100.00},
+    {sku: "MIC", name: "Lipo-C (MIC+B12)", cost: 80.00, price: 160.00},
+    {sku: "Lemon", name: "Lemon Bottle", cost: 52.00, price: 138.00},
+    {sku: "Lira5", name: "Liraglutide 5mg", cost: 69.00, price: 138.00},
+    {sku: "Lira10", name: "Liraglutide 10mg", cost: 128.00, price: 256.00},
+    {sku: "Lira30", name: "Liraglutide 30mg", cost: 324.00, price: 648.00},
+    {sku: "LL37", name: "LL37 5mg", cost: 69.00, price: 138.00},
+    {sku: "MAZ5", name: "Mazdutide 5mg", cost: 81.00, price: 162.00},
+    {sku: "MAZ10", name: "Mazdutide 10mg", cost: 60.00, price: 361.50},
+    {sku: "MAZ20", name: "Mazdutide 20mg", cost: 273.00, price: 546.00},
+    {sku: "MT1", name: "Melanotan 1", cost: 41.00, price: 82.00},
+    {sku: "MT2", name: "Melanotan 2", cost: 41.00, price: 82.00},
+    {sku: "FM2", name: "MGF 2mg", cost: 33.00, price: 66.00},
+    {sku: "MS10", name: "MOTS-C 10mg", cost: 50.00, price: 129.00},
+    {sku: "MS40", name: "MOTS-C 40mg", cost: 145.00, price: 360.00},
+    {sku: "NJ100", name: "NAD+ 100mg", cost: 41.00, price: 82.00},
+    {sku: "NJ500", name: "NAD+ 500mg", cost: 77.00, price: 154.00},
+    {sku: "OT10", name: "Oxytocin 10mg", cost: 65.00, price: 130.00},
+    {sku: "P21", name: "P21 5mg", cost: 255.00, price: 510.00},
+    {sku: "PIN10", name: "Pinealon 10mg", cost: 49.00, price: 98.00},
+    {sku: "PTD", name: "PTD-DBM 1mg", cost: 51.00, price: 102.00},
+    {sku: "P41", name: "PT-141 10mg", cost: 56.00, price: 112.00},
+    {sku: "PE10", name: "PE-22-28 10mg", cost: 68.00, price: 136.00},
+    {sku: "FMP2", name: "PEG-MGF 2mg", cost: 68.00, price: 136.00},
+    {sku: "SM02", name: "Sermorelin 2mg", cost: 45.00, price: 90.00},
+    {sku: "SM05", name: "Sermorelin 5mg", cost: 50.00, price: 138.00},
+    {sku: "SM010", name: "Sermorelin 10mg", cost: 128.00, price: 207.00},
+    {sku: "2S10", name: "SS-31 10mg", cost: 70.00, price: 189.00},
+    {sku: "2S50", name: "SS-31 50mg", cost: 273.00, price: 705.00},
+    {sku: "XA5", name: "Semax 5mg", cost: 40.00, price: 75.00},
+    {sku: "XA10", name: "Semax 10mg", cost: 58.00, price: 111.00},
+    {sku: "SK5", name: "Selank 5mg", cost: 40.00, price: 85.50},
+    {sku: "SK10", name: "Selank 10mg", cost: 58.00, price: 129.00},
+    {sku: "NP810", name: "SNAP-8 10mg", cost: 35.00, price: 75.00},
+    {sku: "332", name: "SLU-PP-332 5mg", cost: 81.00, price: 162.00},
+    {sku: "SUR10", name: "Survodutide 10mg", cost: 187.00, price: 600.00},
+    {sku: "TB5", name: "TB500 5mg", cost: 64.00, price: 154.50},
+    {sku: "TB10", name: "TB500 10mg", cost: 124.00, price: 276.00},
+    {sku: "TSM2", name: "Tesamorelin 2mg", cost: 40.00, price: 80.00},
+    {sku: "TSM5", name: "Tesamorelin 5mg", cost: 80.00, price: 207.00},
+    {sku: "TSM10", name: "Tesamorelin 10mg", cost: 147.00, price: 379.50},
+    {sku: "TSM20", name: "Tesamorelin 20mg", cost: 290.00, price: 580.00},
+    {sku: "TY", name: "Thymalin 10mg", cost: 55.00, price: 110.00},
+    {sku: "TA2", name: "Thymosin Alpha-1 2mg", cost: 32.00, price: 64.00},
+    {sku: "TA5", name: "Thymosin Alpha-1 5mg", cost: 89.00, price: 178.00},
+    {sku: "TA10", name: "Thymosin Alpha-1 10mg", cost: 128.00, price: 256.00},
+    {sku: "VIP10", name: "VIP 10mg", cost: 110.00, price: 220.00},
+    {sku: "Ves", name: "Vesugen 10mg", cost: 55.00, price: 110.00},
+    // Extra Selling Items from list not in Sourcing explicitly
+    {sku: "Pira", name: "Piracetam 800mg", cost: 0, price: 120.00},
+    {sku: "Ani", name: "Aniracetam 200mg", cost: 0, price: 180.00},
+    {sku: "Oxi", name: "Oxiracetam 750mg", cost: 0, price: 150.00},
+    {sku: "Prami", name: "Pramiracetam 300mg", cost: 0, price: 220.00},
+    {sku: "PhenP", name: "Phenylpiracetam 100mg", cost: 0, price: 250.00},
+    {sku: "Colu", name: "Coluracetam 20mg", cost: 0, price: 280.00},
+    {sku: "Nefi", name: "Nefiracetam 400mg", cost: 0, price: 200.00},
+    {sku: "Leve", name: "Levetiracetam 500mg", cost: 0, price: 160.00},
+    {sku: "Faso", name: "Fasoracetam 50mg", cost: 0, price: 240.00},
+    {sku: "Noop", name: "Noopept 10mg", cost: 0, price: 180.00},
+    {sku: "Pheni", name: "Phenibut 250mg", cost: 0, price: 140.00},
+    {sku: "Centro", name: "Centrophenoxine 300mg", cost: 0, price: 170.00},
+    {sku: "Cereb", name: "Cerebrolysin 10mg", cost: 0, price: 140.00},
+    {sku: "Add", name: "Adderall Pure (mg)", cost: 0, price: 0.20},
+    {sku: "Rit", name: "Ritalin Pure (mg)", cost: 0, price: 0.15},
+    {sku: "Moda", name: "Modafinil Pure (mg)", cost: 0, price: 0.10},
+    {sku: "Nic", name: "Nicotine Pure (g)", cost: 0, price: 3.00}
+  ];
+
+  // ZHUO YUE DIRECT: Cost = 0, Price = 2025 Pricing (as provided)
+  const inv_ZhuoYue = [
+    {sku: "SM2", name: "Semaglutide 2mg", cost: 0, price: 69.00},
+    {sku: "SM5", name: "Semaglutide 5mg", cost: 0, price: 85.50},
+    {sku: "SM10", name: "Semaglutide 10mg", cost: 0, price: 111.00},
+    {sku: "SM15", name: "Semaglutide 15mg", cost: 0, price: 145.50},
+    {sku: "SM20", name: "Semaglutide 20mg", cost: 0, price: 172.50},
+    {sku: "SM30", name: "Semaglutide 30mg", cost: 0, price: 207.00},
+    {sku: "SM50", name: "Semaglutide 50mg", cost: 0, price: 250.00},
+    {sku: "TR5", name: "Tirzepatide 5mg", cost: 0, price: 76.50},
+    {sku: "TR10", name: "Tirzepatide 10mg", cost: 0, price: 120.00},
+    {sku: "TR15", name: "Tirzepatide 15mg", cost: 0, price: 154.50},
+    {sku: "TR20", name: "Tirzepatide 20mg", cost: 0, price: 189.00},
+    {sku: "TR30", name: "Tirzepatide 30mg", cost: 0, price: 223.50},
+    {sku: "TR40", name: "Tirzepatide 40mg", cost: 0, price: 276.00},
+    {sku: "TR50", name: "Tirzepatide 50mg", cost: 0, price: 345.00},
+    {sku: "TR60", name: "Tirzepatide 60mg", cost: 0, price: 396.00},
+    {sku: "TR80", name: "Tirzepatide 80mg", cost: 0, price: 576.00},
+    {sku: "TR100", name: "Tirzepatide 100mg", cost: 0, price: 642.00},
+    {sku: "RT5", name: "Retatrutide 5mg", cost: 0, price: 129.00},
+    {sku: "RT10", name: "Retatrutide 10mg", cost: 0, price: 207.00},
+    {sku: "RT15", name: "Retatrutide 15mg", cost: 0, price: 283.50},
+    {sku: "RT20", name: "Retatrutide 20mg", cost: 0, price: 379.50},
+    {sku: "RT30", name: "Retatrutide 30mg", cost: 0, price: 448.50},
+    {sku: "RT40", name: "Retatrutide 40mg", cost: 0, price: 499.50},
+    {sku: "RT50", name: "Retatrutide 50mg", cost: 0, price: 559.50},
+    {sku: "RT60", name: "Retatrutide 60mg", cost: 0, price: 607.50},
+    {sku: "CGL5", name: "Cagrilintide 5mg", cost: 0, price: 223.50},
+    {sku: "CGL10", name: "Cagrilintide 10mg", cost: 0, price: 414.00},
+    {sku: "CS10", name: "CagriSema (Blend) 10mg", cost: 0, price: 298.00},
+    {sku: "SUR10", name: "Survodutide 10mg", cost: 0, price: 600.00},
+    {sku: "MAZ5", name: "Mazdutide 5mg", cost: 0, price: 162.00},
+    {sku: "MDT", name: "Mazdutide 10mg", cost: 0, price: 361.50},
+    {sku: "MAZ20", name: "Mazdutide 20mg", cost: 0, price: 546.00},
+    {sku: "AP5", name: "Adipotide 5mg", cost: 0, price: 230.00},
+    {sku: "AP10", name: "Adipotide 10mg", cost: 0, price: 332.00},
+    {sku: "AOD2", name: "AOD9604 2mg", cost: 0, price: 72.00},
+    {sku: "AOD5", name: "AOD9604 5mg", cost: 0, price: 140.00},
+    {sku: "AOD10", name: "AOD9604 10mg", cost: 0, price: 246.00},
+    {sku: "Dula5", name: "Dulaglutide 5mg", cost: 0, price: 290.00},
+    {sku: "Dula10", name: "Dulaglutide 10mg", cost: 0, price: 476.00},
+    {sku: "Lira5", name: "Liraglutide 5mg", cost: 0, price: 138.00},
+    {sku: "Lira10", name: "Liraglutide 10mg", cost: 0, price: 256.00},
+    {sku: "Lira30", name: "Liraglutide 30mg", cost: 0, price: 648.00},
+    {sku: "332", name: "SLU-PP-332 5mg", cost: 0, price: 162.00},
+    {sku: "H06", name: "HGH 6iu", cost: 0, price: 67.50},
+    {sku: "H10", name: "HGH 10iu", cost: 0, price: 111.00},
+    {sku: "H12", name: "HGH 12iu", cost: 0, price: 145.50},
+    {sku: "H15", name: "HGH 15iu", cost: 0, price: 189.00},
+    {sku: "H24", name: "HGH 24iu", cost: 0, price: 210.00},
+    {sku: "FR2", name: "HGH Frag 2mg", cost: 0, price: 78.00},
+    {sku: "FR5", name: "HGH Frag 5mg", cost: 0, price: 146.00},
+    {sku: "IP5", name: "Ipamorelin 5mg", cost: 0, price: 75.00},
+    {sku: "IP10", name: "Ipamorelin 10mg", cost: 0, price: 154.50},
+    {sku: "TSM2", name: "Tesamorelin 2mg", cost: 0, price: 80.00},
+    {sku: "TSM5", name: "Tesamorelin 5mg", cost: 0, price: 207.00},
+    {sku: "TSM10", name: "Tesamorelin 10mg", cost: 0, price: 379.50},
+    {sku: "TSM20", name: "Tesamorelin 20mg", cost: 0, price: 580.00},
+    {sku: "SMO5", name: "Sermorelin 5mg", cost: 0, price: 138.00},
+    {sku: "SMO10", name: "Sermorelin 10mg", cost: 0, price: 207.00},
+    {sku: "SMO2", name: "Sermorelin 2mg", cost: 0, price: 90.00},
+    {sku: "CND2", name: "CJC-1295 no DAC 2mg", cost: 0, price: 76.00},
+    {sku: "CND5", name: "CJC-1295 no DAC 5mg", cost: 0, price: 172.50},
+    {sku: "CND10", name: "CJC-1295 no DAC 10mg", cost: 0, price: 310.50},
+    {sku: "CD2", name: "CJC-1295 DAC 2mg", cost: 0, price: 100.00},
+    {sku: "CD5", name: "CJC-1295 DAC 5mg", cost: 0, price: 292.50},
+    {sku: "G25", name: "GHRP-2 5mg", cost: 0, price: 44.00},
+    {sku: "G210", name: "GHRP-2 10mg", cost: 0, price: 76.00},
+    {sku: "G65", name: "GHRP-6 5mg", cost: 0, price: 60.00},
+    {sku: "G610", name: "GHRP-6 10mg", cost: 0, price: 94.50},
+    {sku: "HX2", name: "Hexarelin 2mg", cost: 0, price: 80.00},
+    {sku: "HX5", name: "Hexarelin 5mg", cost: 0, price: 172.50},
+    {sku: "G2K", name: "HCG 2000iu", cost: 0, price: 62.00},
+    {sku: "G5K", name: "HCG 5000iu", cost: 0, price: 128.00},
+    {sku: "G75", name: "HMG 75iu", cost: 0, price: 116.00},
+    {sku: "Gonad", name: "Gonadorelin 5mg", cost: 0, price: 76.00},
+    {sku: "IGF01", name: "IGF-1 LR3 0.1mg", cost: 0, price: 76.00},
+    {sku: "IGF1", name: "IGF-1 LR3 1mg", cost: 0, price: 304.00},
+    {sku: "IGD", name: "IGF-DES 1mg", cost: 0, price: 70.00},
+    {sku: "BC2", name: "BPC-157 2mg", cost: 0, price: 42.00},
+    {sku: "BC5", name: "BPC-157 5mg", cost: 0, price: 85.50},
+    {sku: "BC10", name: "BPC-157 10mg", cost: 0, price: 138.00},
+    {sku: "BT5", name: "TB-500 5mg", cost: 0, price: 154.50},
+    {sku: "BT10", name: "TB-500 10mg", cost: 0, price: 276.00},
+    {sku: "BB10", name: "BPC+TB Blend 10mg", cost: 0, price: 198.00},
+    {sku: "BB20", name: "BPC+TB Blend 20mg", cost: 0, price: 379.50},
+    {sku: "BBG70", name: "BPC+GHK+TB 70mg", cost: 0, price: 390.00},
+    {sku: "KLOW80", name: "Klow 80mg", cost: 0, price: 483.00},
+    {sku: "LL375", name: "LL-37 5mg", cost: 0, price: 138.00},
+    {sku: "RA10", name: "Ara-290 10mg", cost: 0, price: 104.00},
+    {sku: "FM2", name: "MGF 2mg", cost: 0, price: 66.00},
+    {sku: "FMP2", name: "PEG-MGF 2mg", cost: 0, price: 136.00},
+    {sku: "TA2", name: "Thymosin Alpha-1 2mg", cost: 0, price: 64.00},
+    {sku: "TA5", name: "Thymosin Alpha-1 5mg", cost: 0, price: 178.00},
+    {sku: "TA10", name: "Thymosin Alpha-1 10mg", cost: 0, price: 256.00},
+    {sku: "TY", name: "Thymalin 10mg", cost: 0, price: 110.00},
+    {sku: "B7-33", name: "B7-33 2mg", cost: 0, price: 90.00},
+    {sku: "CU50", name: "GHK-Cu 50mg", cost: 0, price: 60.00},
+    {sku: "CU100", name: "GHK-Cu 100mg", cost: 0, price: 120.00},
+    {sku: "NP810", name: "Snap-8 10mg", cost: 0, price: 75.00},
+    {sku: "XT100", name: "Botulinum Toxin 100iu", cost: 0, price: 276.00},
+    {sku: "GTT", name: "Glutathione 1500mg", cost: 0, price: 145.50},
+    {sku: "GTT500", name: "Glutathione 600mg", cost: 0, price: 76.00},
+    {sku: "Lemon", name: "Lemon Bottle", cost: 0, price: 138.00},
+    {sku: "LC200", name: "L-Carnitine 200mg", cost: 0, price: 60.00},
+    {sku: "LC600", name: "L-Carnitine 600mg", cost: 0, price: 84.00},
+    {sku: "LC1200", name: "L-Carnitine 1200mg", cost: 0, price: 100.00},
+    {sku: "MIC", name: "Lipo-C", cost: 0, price: 160.00},
+    {sku: "KPV10", name: "KPV 10mg", cost: 0, price: 120.00},
+    {sku: "ET10", name: "Epithalon 10mg", cost: 0, price: 118.50},
+    {sku: "ET50", name: "Epithalon 50mg", cost: 0, price: 345.00},
+    {sku: "XA5", name: "Semax 5mg", cost: 0, price: 75.00},
+    {sku: "XA10", name: "Semax 10mg", cost: 0, price: 111.00},
+    {sku: "SK5", name: "Selank 5mg", cost: 0, price: 85.50},
+    {sku: "SK10", name: "Selank 10mg", cost: 0, price: 129.00},
+    {sku: "Adamax5", name: "Adamax 5mg", cost: 0, price: 120.00},
+    {sku: "Adamax10", name: "Adamax 10mg", cost: 0, price: 190.00},
+    {sku: "DS2", name: "DSIP 2mg", cost: 0, price: 40.00},
+    {sku: "DS10", name: "DSIP 10mg", cost: 0, price: 140.00},
+    {sku: "KS5", name: "Kisspeptin 5mg", cost: 0, price: 78.00},
+    {sku: "KS10", name: "Kisspeptin 10mg", cost: 0, price: 138.00},
+    {sku: "MT2", name: "Melanotan 2", cost: 0, price: 82.00},
+    {sku: "OT10", name: "Oxytocin 10mg", cost: 0, price: 130.00},
+    {sku: "P41", name: "PT-141 10mg", cost: 0, price: 112.00},
+    {sku: "PE10", name: "PE-22-28 10mg", cost: 0, price: 136.00},
+    {sku: "PIN10", name: "Pinealon 10mg", cost: 0, price: 98.00},
+    {sku: "Hum", name: "Humanin 10mg", cost: 0, price: 476.00},
+    {sku: "NJ100", name: "NAD+ 100mg", cost: 0, price: 82.00},
+    {sku: "NJ500", name: "NAD+ 500mg", cost: 0, price: 154.00},
+    {sku: "2S10", name: "SS-31 10mg", cost: 0, price: 189.00},
+    {sku: "2S50", name: "SS-31 50mg", cost: 0, price: 705.00},
+    {sku: "MS10", name: "MOTS-C 10mg", cost: 0, price: 129.00},
+    {sku: "MS40", name: "MOTS-C 40mg", cost: 0, price: 360.00},
+    {sku: "5AM", name: "5-amino-1mq 5mg", cost: 0, price: 138.00},
+    {sku: "F410", name: "FOXO4-DRI 10mg", cost: 0, price: 690.00},
+    {sku: "PNC27", name: "PNC-27 10mg", cost: 0, price: 310.50},
+    {sku: "FN1", name: "Follistatin 344 1mg", cost: 0, price: 552.00},
+    {sku: "AE1", name: "ACE-031 1mg", cost: 0, price: 392.00},
+    {sku: "AR50", name: "AICAR 50mg", cost: 0, price: 100.00},
+    {sku: "GDF8", name: "GDF-8 1mg", cost: 0, price: 322.00},
+    {sku: "P21", name: "P21 5mg", cost: 0, price: 510.00},
+    {sku: "PTD", name: "PTD-DBM 1mg", cost: 0, price: 102.00},
+    {sku: "VIP", name: "VIP 10mg", cost: 0, price: 220.00},
+    {sku: "Bron", name: "Bronchogen 20mg", cost: 0, price: 168.00},
+    {sku: "Cardio", name: "Cardiogen 20mg", cost: 0, price: 162.00},
+    {sku: "Cart", name: "Cartalax 20mg", cost: 0, price: 170.00},
+    {sku: "Corta", name: "Cortagen 20mg", cost: 0, price: 170.00},
+    {sku: "Cryst", name: "Crystagen 20mg", cost: 0, price: 120.00},
+    {sku: "Ves", name: "Vesugen 10mg", cost: 0, price: 110.00},
+    {sku: "BA3", name: "Bacteriostatic Water 3ml", cost: 0, price: 16.00},
+    {sku: "BA10", name: "Bacteriostatic Water 10ml", cost: 0, price: 24.00},
+    {sku: "WA3", name: "Acetic Acid 3ml", cost: 0, price: 16.00},
+    {sku: "WA10", name: "Acetic Acid 10ml", cost: 0, price: 24.00},
+    {sku: "Pira", name: "Piracetam 800mg", cost: 0, price: 120.00},
+    {sku: "Ani", name: "Aniracetam 200mg", cost: 0, price: 180.00},
+    {sku: "Oxi", name: "Oxiracetam 750mg", cost: 0, price: 150.00},
+    {sku: "Prami", name: "Pramiracetam 300mg", cost: 0, price: 220.00},
+    {sku: "PhenP", name: "Phenylpiracetam 100mg", cost: 0, price: 250.00},
+    {sku: "Colu", name: "Coluracetam 20mg", cost: 0, price: 280.00},
+    {sku: "Nefi", name: "Nefiracetam 400mg", cost: 0, price: 200.00},
+    {sku: "Leve", name: "Levetiracetam 500mg", cost: 0, price: 160.00},
+    {sku: "Faso", name: "Fasoracetam 50mg", cost: 0, price: 240.00},
+    {sku: "Noop", name: "Noopept 10mg", cost: 0, price: 180.00},
+    {sku: "Pheni", name: "Phenibut 250mg", cost: 0, price: 140.00},
+    {sku: "Centro", name: "Centrophenoxine 300mg", cost: 0, price: 170.00},
+    {sku: "Cereb", name: "Cerebrolysin 10mg", cost: 0, price: 140.00},
+    {sku: "Add", name: "Adderall Pure (mg)", cost: 0, price: 0.20},
+    {sku: "Rit", name: "Ritalin Pure (mg)", cost: 0, price: 0.15},
+    {sku: "Moda", name: "Modafinil Pure (mg)", cost: 0, price: 0.10},
+    {sku: "Nic", name: "Nicotine Pure (g)", cost: 0, price: 3.00}
+  ];
+
+  // SUBQ: Sourcing/Selling Pairs (as provided)
+  const inv_SubQ = [
+    // Singular Vials (-S)
+    {sku: "TR20-S", name: "Tirzepatide 20mg (1 Vial)", cost: 23.63, price: 65.00},
+    {sku: "TR30-S", name: "Tirzepatide 30mg (1 Vial)", cost: 28.88, price: 80.00},
+    {sku: "TR40-S", name: "Tirzepatide 40mg (1 Vial)", cost: 34.13, price: 95.00},
+    {sku: "SM10-S", name: "Semaglutide 10mg (1 Vial)", cost: 21.88, price: 60.00},
+    {sku: "RT10-S", name: "Retatrutide 10mg (1 Vial)", cost: 23.63, price: 65.00},
+    {sku: "RT15-S", name: "Retatrutide 15mg (1 Vial)", cost: 30.63, price: 85.00},
+    {sku: "RT20-S", name: "Retatrutide 20mg (1 Vial)", cost: 39.38, price: 110.00},
+    {sku: "RT50-S", name: "Retatrutide 50mg (1 Vial)", cost: 78.75, price: 215.00},
+    {sku: "RT60-S", name: "Retatrutide 60mg (1 Vial)", cost: 96.25, price: 260.00},
+    {sku: "BBG70-S", name: "Glow 70mg (1 Vial)", cost: 35.00, price: 95.00},
+    {sku: "KLOW80-S", name: "Klow 80mg (1 Vial)", cost: 35.00, price: 95.00},
+    {sku: "BB20-S", name: "BPC/TB Blend 20mg (1 Vial)", cost: 35.00, price: 95.00},
+    {sku: "5AM-S", name: "5-Amino-1mq 50mg (1 Vial)", cost: 26.25, price: 75.00},
+    {sku: "CP10-S", name: "CJC/IPA Blend 10mg (1 Vial)", cost: 26.25, price: 75.00},
+    {sku: "SK10-S", name: "Selank 10mg (1 Vial)", cost: 21.88, price: 60.00},
+    {sku: "KPV10-S", name: "KPV 10mg (1 Vial)", cost: 21.88, price: 60.00},
+    {sku: "P41-S", name: "PT-141 10mg (1 Vial)", cost: 21.88, price: 60.00},
+    {sku: "MT1-S", name: "Melanotan 1 10mg (1 Vial)", cost: 26.25, price: 75.00},
+    {sku: "NJ500-S", name: "NAD+ 500mg (1 Vial)", cost: 21.88, price: 60.00},
+    {sku: "MS10-S", name: "MOTS-C 10mg (1 Vial)", cost: 21.88, price: 60.00},
+    {sku: "GT1500-S", name: "Glutathione 1.5g (1 Vial)", cost: 26.25, price: 75.00},
+    {sku: "TSM10-S", name: "Tesamorelin 10mg (1 Vial)", cost: 35.00, price: 95.00},
+    {sku: "CU50-S", name: "GHK-Cu 50mg (1 Vial)", cost: 17.50, price: 50.00},
+    {sku: "MT2-S", name: "Melanotan 2 10mg (1 Vial)", cost: 21.88, price: 60.00},
+    {sku: "G5K-S", name: "HCG 5000iu (1 Vial)", cost: 26.25, price: 75.00},
+    {sku: "HOSP", name: "Hospira Water 30ml", cost: 15.00, price: 50.00},
+    {sku: "LIPO-S", name: "Lipo C 216mg (1 Vial)", cost: 26.25, price: 75.00},
+
+    // Full Kits (-K)
+    {sku: "RT10-K", name: "Retatrutide 10mg Kit", cost: 76.00, price: 205.00},
+    {sku: "RT20-K", name: "Retatrutide 20mg Kit", cost: 130.00, price: 350.00},
+    {sku: "RT30-K", name: "Retatrutide 30mg Kit", cost: 195.00, price: 525.00},
+    {sku: "RT50-K", name: "Retatrutide 50mg Kit", cost: 270.00, price: 730.00},
+    {sku: "RT60-K", name: "Retatrutide 60mg Kit", cost: 325.00, price: 880.00},
+    {sku: "TR20-K", name: "Tirzepatide 20mg Kit", cost: 78.00, price: 210.00},
+    {sku: "TR30-K", name: "Tirzepatide 30mg Kit", cost: 107.00, price: 290.00},
+    {sku: "TR30-STD-K", name: "Tirzepatide 30mg (Standard) Kit", cost: 150.00, price: 405.00},
+    {sku: "TR40-K", name: "Tirzepatide 40mg Kit", cost: 136.00, price: 370.00},
+    {sku: "TR60-STD-K", name: "Tirzepatide 60mg (Standard) Kit", cost: 260.00, price: 700.00},
+    {sku: "SM10-K", name: "Semaglutide 10mg Kit", cost: 110.00, price: 300.00},
+    {sku: "SM20-K", name: "Semaglutide 20mg Kit", cost: 120.00, price: 325.00},
+    {sku: "CGL5-K", name: "Cagrilintide 5mg Kit", cost: 135.00, price: 365.00},
+    {sku: "BBG70-K", name: "Glow 70 Kit", cost: 240.00, price: 650.00},
+    {sku: "BB10-K", name: "BPC/TB Blend Kit", cost: 165.00, price: 445.00},
+    {sku: "5AM-K", name: "5-Amino-1mq 5mg Kit", cost: 52.00, price: 140.00},
+    {sku: "H10-K", name: "HGH 10iu Kit", cost: 85.00, price: 230.00},
+    {sku: "H24-K", name: "HGH 24iu Kit", cost: 180.00, price: 485.00},
+    {sku: "TB5-K", name: "TB500 5mg Kit", cost: 110.00, price: 300.00},
+    {sku: "G5K-K", name: "HCG 5000iu Kit", cost: 120.00, price: 325.00},
+    {sku: "IP5-K", name: "Ipamorelin 5mg Kit", cost: 90.00, price: 245.00},
+    {sku: "G25-K", name: "GHRP-2 5mg Kit", cost: 75.00, price: 205.00},
+    {sku: "G65-K", name: "GHRP-6 5mg Kit", cost: 75.00, price: 205.00},
+    {sku: "CD2-K", name: "CJC-1295 DAC 2mg Kit", cost: 90.00, price: 245.00},
+    {sku: "ET10-K", name: "Epithalon 10mg Kit", cost: 80.00, price: 215.00},
+    {sku: "BC10-K", name: "BPC157 10mg Kit", cost: 90.00, price: 245.00},
+    {sku: "CU50-K", name: "GHK-Cu 50mg Kit", cost: 28.00, price: 75.00},
+    {sku: "CU100-K", name: "GHK-Cu 100mg Kit", cost: 125.00, price: 340.00},
+    {sku: "KPV10-K", name: "KPV 10mg Kit", cost: 120.00, price: 325.00},
+    {sku: "P41-K", name: "PT-141 10mg Kit", cost: 120.00, price: 325.00},
+    {sku: "NJ500-K", name: "NAD+ 500mg Kit", cost: 77.00, price: 210.00},
+    {sku: "MT2-K", name: "Melanotan 2 10mg Kit", cost: 41.00, price: 110.00},
+    {sku: "MS10-K", name: "MOTS-C 10mg Kit", cost: 50.00, price: 135.00},
+    {sku: "SK10-K", name: "Selank 10mg Kit", cost: 58.00, price: 155.00},
+    {sku: "XA10-K", name: "Semax 10mg Kit", cost: 58.00, price: 155.00},
+    {sku: "GTT500-K", name: "Glutathione 600mg Kit", cost: 75.00, price: 205.00},
+    {sku: "GT1500-K", name: "Glutathione 1.5g Kit", cost: 80.00, price: 215.00},
+    {sku: "TSM10-K", name: "Tesamorelin 10mg Kit", cost: 147.00, price: 400.00},
+    {sku: "LIPO-K", name: "Lipo C Kit", cost: 0, price: 215.00}
+  ];
+
+  // ==========================
+  // APP STATE
+  // ==========================
+  let currentDatabase = inv_LeeLucy;
+  let cart = [];
+
+  // ==========================
+  // INIT
+  // ==========================
+  document.getElementById("cDate").value = new Date().toLocaleDateString();
+
+  const els = {
+    cVendor: document.getElementById("cVendor"),
+    activeVendorLabel: document.getElementById("activeVendorLabel"),
+    activeVendorBadge: document.getElementById("activeVendorBadge"),
+    shipCostInput: document.getElementById("shipCostInput"),
+    shipChargeInput: document.getElementById("shipChargeInput"),
+    billShippingCheckbox: document.getElementById("billShippingCheckbox"),
+    cDiscount: document.getElementById("cDiscount"),
+    cPayStatus: document.getElementById("cPayStatus"),
+    btnPending: document.getElementById("btnPending"),
+    btnCompleted: document.getElementById("btnCompleted"),
+    prodSearch: document.getElementById("prodSearch"),
+    searchResults: document.getElementById("searchResults"),
+    cartBody: document.getElementById("cartBody"),
+    copyBtn: document.getElementById("copyBtn"),
+    latexBtn: document.getElementById("latexBtn"),
+    pdfBtn: document.getElementById("pdfBtn")
+  };
+
+  // Totals UI
+  const tot = {
+    custItemsSubtotal: document.getElementById("custItemsSubtotal"),
+    custShipCharge: document.getElementById("custShipCharge"),
+    custDiscount: document.getElementById("custDiscount"),
+    custTotalDue: document.getElementById("custTotalDue"),
+    youItemsCost: document.getElementById("youItemsCost"),
+    youShipCost: document.getElementById("youShipCost"),
+    youTotalCost: document.getElementById("youTotalCost"),
+    profitBig: document.getElementById("profitBig")
+  };
+
+  // ==========================
+  // VENDOR SWITCHING
+  // ==========================
+  function changeVendor(){
+    const vendor = els.cVendor.value;
+
+    if (vendor === "Lee Lucy"){
+      currentDatabase = inv_LeeLucy;
+      els.activeVendorLabel.textContent = "Lee Lucy";
+      els.activeVendorBadge.textContent = "Vendor: Lee Lucy";
+      els.shipCostInput.value = "65.00";
+      els.shipChargeInput.value = "65.00";
+      els.billShippingCheckbox.checked = true;
+    } else if (vendor === "Zhuo Yue Direct"){
+      currentDatabase = inv_ZhuoYue;
+      els.activeVendorLabel.textContent = "Zhuo Yue Direct";
+      els.activeVendorBadge.textContent = "Vendor: Zhuo Yue";
+      els.shipCostInput.value = "0.00";
+      els.shipChargeInput.value = "0.00";
+      els.billShippingCheckbox.checked = true;
+    } else if (vendor === "SubQ"){
+      currentDatabase = inv_SubQ;
+      els.activeVendorLabel.textContent = "SubQ";
+      els.activeVendorBadge.textContent = "Vendor: SubQ";
+      els.shipCostInput.value = "50.00";
+      els.shipChargeInput.value = "50.00";
+      els.billShippingCheckbox.checked = true;
+    }
+
+    hideResults();
+    els.prodSearch.value = "";
+    calculateTotals();
+  }
+
+  // ==========================
+  // PAYMENT STATUS
+  // ==========================
+  function setPaymentStatus(status){
+    els.cPayStatus.value = status;
+
+    els.btnPending.classList.remove("active","pending","completed");
+    els.btnCompleted.classList.remove("active","pending","completed");
+
+    if (status === "Completed"){
+      els.btnCompleted.classList.add("active","completed");
+    } else {
+      els.btnPending.classList.add("active","pending");
+      status = "Pending";
+      els.cPayStatus.value = status;
+    }
+    setPayBadge(status);
+  }
+
+  // ==========================
+  // SEARCH
+  // ==========================
+  function hideResults(){
+    els.searchResults.style.display = "none";
+    els.searchResults.innerHTML = "";
+  }
+
+  function renderResults(matches){
+    els.searchResults.innerHTML = "";
+    if (!matches.length){
+      hideResults();
+      return;
+    }
+
+    els.searchResults.style.display = "block";
+
+    matches.slice(0, 60).forEach(item => {
+      const row = document.createElement("div");
+      row.className = "resultItem";
+
+      const left = document.createElement("div");
+      left.className = "resultLeft";
+
+      const sku = document.createElement("div");
+      sku.className = "sku";
+      sku.textContent = item.sku;
+
+      const nm = document.createElement("div");
+      nm.className = "rName";
+      nm.textContent = item.name;
+
+      const meta = document.createElement("div");
+      meta.className = "rMeta";
+      meta.textContent = `Cost: ${money(item.cost)} | Sell: ${money(item.price)}`;
+
+      left.appendChild(sku);
+      left.appendChild(nm);
+      left.appendChild(meta);
+
+      const right = document.createElement("div");
+      right.className = "resultRight";
+      const b1 = document.createElement("div");
+      b1.className = "badge";
+      b1.textContent = "ADD";
+      right.appendChild(b1);
+
+      row.appendChild(left);
+      row.appendChild(right);
+
+      row.addEventListener("click", () => {
+        addToCart(item);
+        hideResults();
+        els.prodSearch.value = "";
+        els.prodSearch.focus();
+      });
+
+      els.searchResults.appendChild(row);
+    });
+  }
+
+  els.prodSearch.addEventListener("input", (e) => {
+    const term = String(e.target.value || "").trim().toLowerCase();
+    if (term.length < 2){
+      hideResults();
+      return;
+    }
+    const matches = currentDatabase.filter(item => {
+      const sku = String(item.sku || "").toLowerCase();
+      const nm = String(item.name || "").toLowerCase();
+      return sku.includes(term) || nm.includes(term);
+    });
+    renderResults(matches);
+  });
+
+  // close dropdown on outside click
+  document.addEventListener("click", (e) => {
+    if (!els.searchResults.contains(e.target) && e.target !== els.prodSearch){
+      hideResults();
+    }
+  });
+
+  // ==========================
+  // CART
+  // ==========================
+  function addToCart(item){
+    cart.push({
+      sku: item.sku,
+      name: item.name,
+      cost: nnum(item.cost),
+      price: nnum(item.price),
+      qty: 1
+    });
+    renderCart();
+  }
+
+  function removeFromCart(index){
+    cart.splice(index, 1);
+    renderCart();
+  }
+
+  function setQty(index, qty){
+    const q = clamp(Math.floor(nnum(qty)), 1, 999);
+    cart[index].qty = q;
+    calculateTotals();
+  }
+
+  function renderCart(){
+    els.cartBody.innerHTML = "";
+
+    cart.forEach((item, index) => {
+      const tr = document.createElement("tr");
+
+      const tdSku = document.createElement("td");
+      tdSku.textContent = item.sku;
+
+      const tdName = document.createElement("td");
+      tdName.textContent = item.name;
+
+      const tdQty = document.createElement("td");
+      const qtyInput = document.createElement("input");
+      qtyInput.type = "number";
+      qtyInput.min = "1";
+      qtyInput.step = "1";
+      qtyInput.value = String(item.qty || 1);
+      qtyInput.className = "qtyInput";
+      qtyInput.addEventListener("change", () => setQty(index, qtyInput.value));
+      tdQty.appendChild(qtyInput);
+
+      const tdCost = document.createElement("td");
+      const costInput = document.createElement("input");
+      costInput.type = "text";
+      costInput.className = "cellInput";
+      costInput.value = nnum(item.cost).toFixed(2);
+      costInput.readOnly = true;
+      tdCost.appendChild(costInput);
+
+      const tdPrice = document.createElement("td");
+      const priceInput = document.createElement("input");
+      priceInput.type = "text";
+      priceInput.className = "cellInput";
+      priceInput.value = nnum(item.price).toFixed(2);
+      priceInput.readOnly = true;
+      tdPrice.appendChild(priceInput);
+
+      const tdAct = document.createElement("td");
+      tdAct.style.textAlign = "right";
+      const btn = document.createElement("button");
+      btn.className = "removeBtn";
+      btn.textContent = "Remove";
+      btn.addEventListener("click", () => removeFromCart(index));
+      tdAct.appendChild(btn);
+
+      tr.appendChild(tdSku);
+      tr.appendChild(tdName);
+      tr.appendChild(tdQty);
+      tr.appendChild(tdCost);
+      tr.appendChild(tdPrice);
+      tr.appendChild(tdAct);
+
+      els.cartBody.appendChild(tr);
+    });
+
+    calculateTotals();
+  }
+
+  // ==========================
+  // CALCULATIONS (PERFECT SHIPPING)
+  // ==========================
+  function calculateTotals(){
+    // Items totals respect qty
+    let itemsCost = 0;
+    let itemsSubtotal = 0;
+
+    cart.forEach(item => {
+      const q = clamp(Math.floor(nnum(item.qty)), 1, 999);
+      itemsCost += nnum(item.cost) * q;
+      itemsSubtotal += nnum(item.price) * q;
+    });
+
+    // Shipping: your cost always counts; customer charge only if billed
+    let shipCost = nnum(els.shipCostInput.value);
+    shipCost = Math.max(0, shipCost);
+
+    let shipCharge = nnum(els.shipChargeInput.value);
+    shipCharge = Math.max(0, shipCharge);
+
+    const billShipping = !!els.billShippingCheckbox.checked;
+    const customerShip = billShipping ? shipCharge : 0;
+
+    // Discount clamps to not exceed (itemsSubtotal + customerShip)
+    let discount = nnum(els.cDiscount.value);
+    discount = Math.max(0, discount);
+    const maxDiscount = Math.max(0, itemsSubtotal + customerShip);
+    discount = clamp(discount, 0, maxDiscount);
+
+    // Customer total due (this is the money collected)
+    const customerTotalDue = (itemsSubtotal + customerShip) - discount;
+
+    // Your total cost
+    const yourTotalCost = itemsCost + shipCost;
+
+    // Profit
+    const profit = customerTotalDue - yourTotalCost;
+
+    // UI
+    tot.custItemsSubtotal.textContent = money(itemsSubtotal);
+    tot.custShipCharge.textContent = money(customerShip);
+    tot.custDiscount.textContent = "-" + money(discount);
+    tot.custTotalDue.textContent = money(customerTotalDue);
+
+    tot.youItemsCost.textContent = money(itemsCost);
+    tot.youShipCost.textContent = money(shipCost);
+    tot.youTotalCost.textContent = money(yourTotalCost);
+
+    tot.profitBig.textContent = money(profit);
+
+    // Colorize profit
+    if (profit >= 0){
+      tot.profitBig.style.color = "rgba(30,215,96,0.95)";
+    } else {
+      tot.profitBig.style.color = "rgba(255,77,77,0.95)";
+    }
+
+    // Keep discount input visually consistent if clamped
+    const shown = nnum(els.cDiscount.value);
+    if (Math.abs(shown - discount) > 0.005){
+      els.cDiscount.value = discount.toFixed(2);
+    }
+
+    return {
+      itemsCost, itemsSubtotal,
+      shipCost, shipCharge, customerShip,
+      billShipping, discount,
+      customerTotalDue,
+      yourTotalCost,
+      profit
+    };
+  }
+
+  // ==========================
+  // CLIPBOARD ROW
+  // ==========================
+  function generateClipboardString(){
+    const fin = calculateTotals();
+
+    const status = "No Status";
+    const placed = (els.cPayStatus.value === "Completed") ? "Paid" : "Pending";
+
+    const name = document.getElementById("cName").value || "";
+    const contact = document.getElementById("cContact").value || "";
+    const date = document.getElementById("cDate").value || "";
+    const address = document.getElementById("cAddress").value || "";
+    const carrier = document.getElementById("cCarrier").value || "";
+    const vendor = els.cVendor.value || "";
+    const payment = document.getElementById("cPayment").value || "";
+    const tracking = document.getElementById("cTracking").value || "";
+
+    const itemString = cart.map(i => `${i.sku} x${clamp(Math.floor(nnum(i.qty)),1,999)}: ${i.name}`).join(", ");
+
+    // Keep your original column idea (totalCost=yourTotalCost, totalPaid=customerTotalDue, profit)
+    const row = [
+      status,
+      placed,
+      name,
+      contact,
+      "",                 // turnaround placeholder
+      date,
+      itemString,
+      address,
+      carrier,
+      fin.yourTotalCost.toFixed(2),
+      fin.customerTotalDue.toFixed(2),
+      fin.profit.toFixed(2),
+      tracking,
+      vendor,
+      payment
+    ].join("\t");
+
+    navigator.clipboard.writeText(row)
+      .then(() => toast("Copied row to clipboard"))
+      .catch(() => toast("Clipboard blocked by browser"));
+  }
+
+  // ==========================
+  // LaTeX INVOICE (INCLUDES SHIPPING + DISCOUNT)
+  // ==========================
+  function escapeLatex(str){
+    if (!str) return "";
+    return String(str)
+      .replace(/\\/g, "\\textbackslash{}")
+      .replace(/([&%$#_{}])/g, "\\$1")
+      .replace(/\^/g, "\\textasciicircum{}")
+      .replace(/~/g, "\\textasciitilde{}")
+      .replace(/\n/g, "\\\\ ");
+  }
+
+  function generateInvoiceLatex(){
+    const fin = calculateTotals();
+
+    const name = escapeLatex(document.getElementById("cName").value || "Client Name");
+    const address = escapeLatex(document.getElementById("cAddress").value || "Address");
+    const date = document.getElementById("cDate").value || "";
+    const carrier = escapeLatex(document.getElementById("cCarrier").value || "");
+    const tracking = document.getElementById("cTracking").value || "";
+    const payStatus = document.getElementById("cPayStatus").value || "Pending";
+    const payMethod = escapeLatex(document.getElementById("cPayment").value || "");
+    const invNum = "INV-" + String(date).replace(/\//g, "");
+    const trackingDisplay = tracking ? `\\texttt{${escapeLatex(tracking)}}` : "\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_\\_";
+
+    let itemRows = "";
+    cart.forEach(item => {
+      const q = clamp(Math.floor(nnum(item.qty)), 1, 999);
+      const lineName = escapeLatex(item.name);
+      const lineSku = escapeLatex(item.sku);
+      const linePrice = (nnum(item.price) * q).toFixed(2);
+      itemRows += `${lineName} (x${q}) & ${lineSku} & \\$${linePrice} \\\\ \\hline\n`;
+    });
+
+    // Shipping + Discount rows
+    let extraRows = "";
+    if (fin.billShipping && fin.customerShip > 0){
+      extraRows += `Shipping & & \\$${fin.customerShip.toFixed(2)} \\\\ \\hline\n`;
+    }
+    if (fin.discount > 0){
+      extraRows += `Discount & & -\\$${fin.discount.toFixed(2)} \\\\ \\hline\n`;
+    }
+
+    const statusColor = (payStatus === "Completed") ? "0,150,0" : "200,150,0";
+
+    const latex = `\\documentclass[11pt]{article}
+\\usepackage[utf8]{inputenc}
+\\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\\usepackage{tabularx}
+\\usepackage{xcolor}
+\\usepackage{array}
+\\renewcommand{\\arraystretch}{1.4}
+
+\\begin{document}
+
+\\noindent
+\\begin{tabularx}{\\textwidth}{X r}
+  {\\Huge \\textbf{INVOICE}} & \\textbf{\\large Zhuo Yue Labs} \\\\
+  & \\textit{Peptide Technologies} \\\\
+\\end{tabularx}
+
+\\vspace{0.35cm}
+\\noindent\\rule{\\textwidth}{0.6pt}
+\\vspace{0.45cm}
+
+\\noindent
+\\begin{tabularx}{\\textwidth}{X r}
+  \\textbf{Bill To:} & \\textbf{Details:} \\\\
+  ${name} & \\textbf{Invoice \\#:} ${escapeLatex(invNum)} \\\\
+  ${address} & \\textbf{Date:} ${escapeLatex(date)} \\\\
+   & \\textbf{Carrier:} ${carrier} \\\\
+   & \\textbf{Payment:} ${payMethod} \\\\
+   & \\textbf{Status:} \\textcolor[RGB]{${statusColor}}{\\textbf{${escapeLatex(payStatus.toUpperCase())}}} \\\\
+\\end{tabularx}
+
+\\vspace{0.5cm}
+
+\\noindent
+\\begin{tabularx}{\\textwidth}{|X|c|r|}
+\\hline
+\\textbf{Item Description} & \\textbf{Code} & \\textbf{Line Total} \\\\
+\\hline
+${itemRows}${extraRows}
+\\end{tabularx}
+
+\\vspace{0.4cm}
+\\begin{flushright}
+\\begin{tabular}{r r}
+  Items Subtotal: & \\$${fin.itemsSubtotal.toFixed(2)} \\\\
+  ${fin.billShipping ? `Shipping: & \\$${fin.customerShip.toFixed(2)} \\\\` : `Shipping: & \\$0.00 \\\\`}
+  Discount: & -\\$${fin.discount.toFixed(2)} \\\\
+  \\hline
+  \\textbf{Total Due:} & \\textbf{\\$${fin.customerTotalDue.toFixed(2)}} \\\\
+\\end{tabular}
+\\end{flushright}
+
+\\vspace{0.5cm}
+\\noindent
+\\textbf{Tracking Information:} \\\\
+${trackingDisplay}
+
+\\vfill
+\\begin{center}
+\\textit{Thank you for your business!}
+\\end{center}
+
+\\end{document}
+`;
+
+    navigator.clipboard.writeText(latex)
+      .then(() => toast("LaTeX copied to clipboard"))
+      .catch(() => toast("Clipboard blocked by browser"));
+  }
+
+  // ==========================
+  // PDF INVOICE (INCLUDES SHIPPING + DISCOUNT)
+  // ==========================
+  function downloadPDF(){
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+
+    const fin = calculateTotals();
+
+    const name = document.getElementById("cName").value || "Client Name";
+    const address = document.getElementById("cAddress").value || "";
+    const date = document.getElementById("cDate").value || "";
+    const invNum = "INV-" + String(date).replace(/\//g, "");
+    const carrier = document.getElementById("cCarrier").value || "";
+    const payment = document.getElementById("cPayment").value || "";
+    const status = document.getElementById("cPayStatus").value || "Pending";
+    const tracking = document.getElementById("cTracking").value || "Pending";
+
+    // Header
+    doc.setFont("helvetica","bold");
+    doc.setFontSize(22);
+    doc.setTextColor(40, 40, 40);
+    doc.text("INVOICE", 14, 18);
+
+    doc.setFontSize(12);
+    doc.setFont("helvetica","bold");
+    doc.text("Zhuo Yue Labs", 196, 18, { align: "right" });
+
+    doc.setFont("helvetica","normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Peptide Technologies", 196, 23, { align: "right" });
+
+    doc.setDrawColor(120);
+    doc.setLineWidth(0.5);
+    doc.line(14, 28, 196, 28);
+
+    const startY = 36;
+
+    // Bill To
+    doc.setFont("helvetica","bold");
+    doc.setTextColor(0,0,0);
+    doc.text("Bill To:", 14, startY);
+
+    doc.setFont("helvetica","normal");
+    doc.text(String(name), 14, startY + 6);
+    const addrLines = doc.splitTextToSize(String(address), 82);
+    doc.text(addrLines, 14, startY + 12);
+
+    // Details
+    const rightX = 132;
+    doc.setFont("helvetica","bold");
+    doc.text("Details:", rightX, startY);
+
+    doc.setFont("helvetica","normal");
+    doc.text("Invoice #:", rightX, startY + 6);
+    doc.text(String(invNum), rightX + 22, startY + 6);
+
+    doc.text("Date:", rightX, startY + 11);
+    doc.text(String(date), rightX + 22, startY + 11);
+
+    doc.text("Carrier:", rightX, startY + 16);
+    doc.text(String(carrier), rightX + 22, startY + 16);
+
+    doc.text("Payment:", rightX, startY + 21);
+    doc.text(String(payment), rightX + 22, startY + 21);
+
+    doc.text("Status:", rightX, startY + 26);
+    if (status === "Completed") doc.setTextColor(0,150,0);
+    else doc.setTextColor(220,150,0);
+    doc.setFont("helvetica","bold");
+    doc.text(String(status).toUpperCase(), rightX + 22, startY + 26);
+    doc.setTextColor(0,0,0);
+
+    // Table
+    const bodyRows = cart.map(item => {
+      const q = clamp(Math.floor(nnum(item.qty)), 1, 999);
+      const lineTotal = nnum(item.price) * q;
+      return [
+        `${item.name} (x${q})`,
+        item.sku,
+        money(lineTotal)
+      ];
+    });
+
+    if (fin.billShipping && fin.customerShip > 0){
+      bodyRows.push(["Shipping", "", money(fin.customerShip)]);
+    }
+    if (fin.discount > 0){
+      bodyRows.push(["Discount", "", "-" + money(fin.discount)]);
+    }
+
+    doc.autoTable({
+      startY: startY + 34,
+      head: [["Item Description", "Code", "Line Total"]],
+      body: bodyRows,
+      theme: "striped",
+      headStyles: { fillColor: [228, 0, 0], textColor: 255 },
+      columnStyles: {
+        0: { cellWidth: 110 },
+        1: { cellWidth: 35 },
+        2: { halign: "right" }
+      }
+    });
+
+    const afterTableY = doc.lastAutoTable.finalY + 10;
+
+    // Totals block
+    doc.setFont("helvetica","bold");
+    doc.text("Totals", 14, afterTableY);
+
+    doc.setFont("helvetica","normal");
+    const totalsLines = [
+      `Items Subtotal: ${money(fin.itemsSubtotal)}`,
+      `Shipping: ${money(fin.customerShip)}`,
+      `Discount: -${money(fin.discount)}`,
+      `Total Due: ${money(fin.customerTotalDue)}`
+    ];
+    doc.text(totalsLines, 14, afterTableY + 6);
+
+    // Tracking
+    doc.setFont("helvetica","bold");
+    doc.text("Tracking Information:", 14, afterTableY + 30);
+    doc.setFont("helvetica","normal");
+    const trackLines = doc.splitTextToSize(String(tracking), 182);
+    doc.text(trackLines, 14, afterTableY + 36);
+
+    doc.setFontSize(10);
+    doc.setTextColor(100,100,100);
+    doc.text("Thank you for your business!", 105, 290, { align: "center" });
+
+    const safeName = String(name).replace(/[^a-z0-9]/gi, "_");
+    const safeDate = String(date).replace(/\//g, "-");
+    const fileName = `Invoice_${safeName}_${safeDate}.pdf`;
+    doc.save(fileName);
+  }
+
+  // ==========================
+  // WIRE EVENTS
+  // ==========================
+  els.cVendor.addEventListener("change", changeVendor);
+
+  els.shipCostInput.addEventListener("input", calculateTotals);
+  els.shipChargeInput.addEventListener("input", calculateTotals);
+  els.cDiscount.addEventListener("input", calculateTotals);
+  els.billShippingCheckbox.addEventListener("change", calculateTotals);
+
+  document.getElementById("cCarrier").addEventListener("change", calculateTotals);
+  document.getElementById("cPayment").addEventListener("change", calculateTotals);
+
+  els.btnPending.addEventListener("click", () => setPaymentStatus("Pending"));
+  els.btnCompleted.addEventListener("click", () => setPaymentStatus("Completed"));
+
+  els.copyBtn.addEventListener("click", generateClipboardString);
+  els.latexBtn.addEventListener("click", generateInvoiceLatex);
+  els.pdfBtn.addEventListener("click", downloadPDF);
+
+  // Start state
+  setPaymentStatus("Pending");
+  changeVendor(); // applies defaults + totals
+
+</script>
+</body>
+</html>

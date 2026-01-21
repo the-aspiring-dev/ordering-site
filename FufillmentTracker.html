@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zhuo Yue Lab | Fulfillment Master</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --text-muted: #a0a0a0;
+            --accent: #00d4ff;
+            --accent-hover: #00a3cc;
+            --success: #00ff9d;
+            --danger: #ff4d4d;
+            --border: #333;
+        }
+
+        * { box-sizing: border-box; font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            /* Tries to load background.jpg from local folder, falls back to dark grey */
+            background-image: linear-gradient(rgba(18,18,18,0.9), rgba(18,18,18,0.9)), url('./background.jpg');
+            background-size: cover;
+            background-attachment: fixed;
+            min-height: 100vh;
+        }
+
+        /* --- Header --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .brand img {
+            height: 50px;
+            width: auto;
+            border-radius: 5px;
+            /* Placeholder styling if image is missing */
+            background: #333; 
+        }
+
+        h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; text-transform: uppercase; }
+
+        .controls button {
+            background: var(--card-bg);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-left: 10px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .controls button:hover {
+            background: var(--accent);
+            color: #000;
+        }
+
+        .hidden-input { display: none; }
+
+        /* --- Stats Cards --- */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card h3 { margin: 0 0 10px 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; }
+        .card .value { font-size: 1.8rem; font-weight: bold; }
+        .val-green { color: var(--success); }
+        .val-blue { color: var(--accent); }
+        .val-red { color: var(--danger); }
+
+        /* --- Data Table --- */
+        .table-wrapper {
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+        }
+
+        .toolbar {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
+        select, input[type="text"] {
+            padding: 8px;
+            background: #2c2c2c;
+            border: 1px solid var(--border);
+            color: white;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background: #252525;
+            color: var(--accent);
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        tr:hover { background: #2a2a2a; }
+
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .status-delivered { background: rgba(0, 255, 157, 0.2); color: var(--success); }
+        .status-transport { background: rgba(0, 212, 255, 0.2); color: var(--accent); }
+        .status-pending { background: rgba(255, 255, 0, 0.2); color: #ffff00; }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            cursor: pointer;
+            font-size: 1.2rem;
+        }
+
+        /* --- Footer / Wallets --- */
+        .wallets {
+            margin-top: 40px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .wallet-item { margin-bottom: 5px; font-family: monospace; word-break: break-all; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <img src="./logo.png" alt="ZY Lab Logo" onerror="this.style.display='none'">
+            <div>
+                <h1>Zhuo Yue Lab</h1>
+                <div style="font-size: 0.8rem; color: var(--accent);">Peptide Master Fulfillment Sheet</div>
+            </div>
+        </div>
+        <div class="controls">
+            <button onclick="document.getElementById('fileInput').click()">Import Data</button>
+            <button onclick="exportData()">Save Data to File</button>
+            <input type="file" id="fileInput" class="hidden-input" accept=".json" onchange="loadData(this)">
+        </div>
+    </header>
+
+    <div class="stats-container">
+        <div class="card">
+            <h3>Gross Revenue</h3>
+            <div class="value val-blue" id="totalRevenue">$0.00</div>
+        </div>
+        <div class="card">
+            <h3>Total Real Expense</h3>
+            <div class="value val-red" id="totalExpense">$0.00</div>
+        </div>
+        <div class="card">
+            <h3>Net Realized Profit</h3>
+            <div class="value val-green" id="totalProfit">$0.00</div>
+        </div>
+        <div class="card">
+            <h3>Profit Margin</h3>
+            <div class="value" id="profitMargin">0%</div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <div class="toolbar">
+            <div>
+                <strong style="margin-right: 10px;">Orders</strong>
+                <select id="monthFilter" onchange="renderTable()">
+                    <option value="All">All Months</option>
+                    <option value="December 2025">December 2025</option>
+                    <option value="January 2026">January 2026</option>
+                </select>
+            </div>
+            <div style="font-size: 0.9rem; color: #888; align-self: center;">
+                * Edit raw data via "Save Data", edit JSON, then "Import".
+            </div>
+        </div>
+        
+        <table id="orderTable">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Items</th>
+                    <th>Vendor</th>
+                    <th>Cost</th>
+                    <th>Paid</th>
+                    <th>Profit</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                </tbody>
+        </table>
+    </div>
+
+    <div class="wallets">
+        <h3>Wallet Watch</h3>
+        <div class="wallet-item"><strong>Lee Lucy (BTC):</strong> bc1q77np7q07x28jz2zhm3rmqqxra0dmr0dx7xddqfu5cvcz3925srlsftvv59</div>
+        <div class="wallet-item"><strong>Sub Q (BTC):</strong> bc1q9vtjtmy36d3x5zzq6zcrdx5ffktqqsfftc58qj</div>
+        <div class="wallet-item"><strong>Myself (BTC):</strong> bc1qvf5u79zmfpxnln3nuhyzr74dgtwqz4usz20uy4</div>
+    </div>
+
+    <script>
+        // --- 1. The Data Parsed from your Prompt ---
+        // This array serves as the "Database". 
+        let orderData = [
+            // December 2025
+            { month: "December 2025", date: "12/08/25", customer: "Russell Johnson", status: "Delivered", items: "CU50: GHK-Cu", vendor: "Me", cost: 0, paid: 66, profit: 66, carrier: "N/A" },
+            { month: "December 2025", date: "12/09/25", customer: "Long Hoang", status: "Delivered", items: "RT5: Retatrutide", vendor: "Me", cost: 11, paid: 20, profit: 9, carrier: "USPS" },
+            { month: "December 2025", date: "12/10/25", customer: "Toby Feldman", status: "Delivered", items: "IPS5: Ipamorelin, TSM5: Tesamorelin, BAC 10ml", vendor: "N/A", cost: 0, paid: 200, profit: 200, carrier: "N/A" },
+            { month: "December 2025", date: "12/11/25", customer: "Emir", status: "Delivered", items: "XA5: Semax, SK5: Selank, ET10: Epithalon", vendor: "N/A", cost: 0, paid: 247, profit: 247, carrier: "N/A" },
+            { month: "December 2025", date: "12/10/25", customer: "Shay Mason", status: "Delivered", items: "RT20: Retatrutide, MS10: MOTS-C, BAC 3ml", vendor: "Lee Lucy", cost: 238, paid: 284.41, profit: 46.41, carrier: "Aramex NZ" },
+            { month: "December 2025", date: "12/15/25", customer: "Russell Johnson", status: "Delivered", items: "BC2: BPC-157", vendor: "Me", cost: 0, paid: 45, profit: 45, carrier: "N/A" },
+            { month: "December 2025", date: "12/15/25", customer: "Jack Stanton", status: "Delivered", items: "CU50: GHK-Cu, BC5: BPC-157", vendor: "SubQ", cost: 0, paid: 140, profit: 140, carrier: "N/A" },
+            { month: "December 2025", date: "12/15/25", customer: "Nicholas Hancock", status: "Delivered", items: "RT15: Retatrutide", vendor: "Lee Lucy", cost: 155, paid: 180, profit: 25, carrier: "Fedex" },
+            { month: "December 2025", date: "12/18/25", customer: "David Dickson", status: "Delivered", items: "SK5: Selank, 5AM: 5-amino-1mq, CGL10: Cagrilintide", vendor: "Lee Lucy", cost: 215, paid: 342, profit: 127, carrier: "Fedex" },
+            { month: "December 2025", date: "12/19/25", customer: "Isaac Chan", status: "Delivered", items: "MT2: Melanotan-2, CU50: GHK-Cu, RT5: Retatrutide", vendor: "Lee Lucy", cost: 169, paid: 229, profit: 60, carrier: "Fedex" },
+            { month: "December 2025", date: "12/22/25", customer: "Asad Albakri", status: "Delivered", items: "RT5: Retatrutide, BAC 3ml", vendor: "N/A", cost: 65, paid: 215, profit: 150, carrier: "N/A" },
+            { month: "December 2025", date: "12/22/25", customer: "Daniel Komokso", status: "Delivered", items: "RT10: Retatrutide, CU50: GHK-Cu, BAC 3ml, H06: HGH 191AA", vendor: "N/A", cost: 40, paid: 340, profit: 300, carrier: "N/A" },
+            { month: "December 2025", date: "12/22/25", customer: "Christian Sanchez", status: "Delivered", items: "H10: HGH 191AA", vendor: "Me", cost: 0, paid: 145, profit: 145, carrier: "USPS" },
+            { month: "December 2025", date: "12/24/25", customer: "Long Hoang", status: "Delivered", items: "RT20: Retatrutide, BAC 3ml", vendor: "N/A", cost: 0, paid: 314, profit: 314, carrier: "N/A" },
+            { month: "December 2025", date: "12/25/25", customer: "Adrijan Kadribasic", status: "Delivered", items: "RT5: Retatrutide", vendor: "N/A", cost: 0, paid: 0, profit: 0, carrier: "N/A" },
+            { month: "December 2025", date: "12/26/25", customer: "Lilly Proffer", status: "Delivered", items: "Adderall, Vyvanse", vendor: "N/A", cost: 0, paid: 140, profit: 140, carrier: "N/A" },
+            { month: "December 2025", date: "12/27/25", customer: "Floyd Korzan", status: "Delivered", items: "Hospira 31ml, MT2: Melanotan-2", vendor: "SubQ", cost: 35, paid: 0, profit: -35, carrier: "USPS" },
+            { month: "December 2025", date: "12/29/25", customer: "Jack Stanton", status: "Delivered", items: "KLOW80, Hospira 31ml", vendor: "SubQ", cost: 66, paid: 135, profit: 69, carrier: "USPS" },
+            { month: "December 2025", date: "12/30/25", customer: "Nicolas E", status: "Delivered", items: "RT10: Retatrutide", vendor: "SubQ", cost: 120, paid: 263, profit: 143, carrier: "USPS" },
+            { month: "December 2025", date: "12/30/25", customer: "Carson Johnson", status: "Delivered", items: "RT10: Retatrutide, NJ500: NAD+, Hospira 31ml", vendor: "SubQ", cost: 200, paid: 275, profit: 75, carrier: "USPS" },
+            
+            // January 2026
+            { month: "January 2026", date: "01/01/26", customer: "Russell Johnson", status: "In Transport", items: "KLOW80, Hospira 31ml", vendor: "SubQ", cost: 66, paid: 135, profit: 69, carrier: "USPS" },
+            { month: "January 2026", date: "01/01/26", customer: "Ryan Brophy", status: "Delivered", items: "RT10: Retatrutide", vendor: "SubQ", cost: 120, paid: 230, profit: 110, carrier: "USPS" },
+            { month: "January 2026", date: "01/03/26", customer: "Ethan Lofgren", status: "Delivered", items: "RT10: Retatrutide, Hospira 31ml", vendor: "SubQ", cost: 120.83, paid: 250, profit: 129.17, carrier: "USPS" },
+            { month: "January 2026", date: "01/08/26", customer: "Parker Burke", status: "Delivered", items: "KLOW80", vendor: "Lee Lucy", cost: 319.26, paid: 595, profit: 275.74, carrier: "USPS" },
+            { month: "January 2026", date: "01/09/26", customer: "Andreas Thomas", status: "In Transport", items: "RT10: Retatrutide, BAC 10ml", vendor: "SubQ", cost: 64, paid: 125, profit: 61, carrier: "UPS" },
+            { month: "January 2026", date: "01/10/26", customer: "Danielle Goings", status: "In Transport", items: "RT10: Retatrutide, BAC 10ml", vendor: "SubQ", cost: 163, paid: 280, profit: 117, carrier: "UPS" },
+            { month: "January 2026", date: "01/16/26", customer: "Marko", status: "In Transport", items: "RT5: Retatrutide", vendor: "Lee Lucy", cost: 145, paid: 171, profit: 26, carrier: "Fedex" },
+            { month: "January 2026", date: "01/16/26", customer: "Jonatan Domínguez", status: "In Transport", items: "RT10: Retatrutide", vendor: "SubQ", cost: 120, paid: 240, profit: 120, carrier: "UPS" },
+            { month: "January 2026", date: "01/17/26", customer: "Thet Hein", status: "In Transport", items: "RT10: Retatrutide, CND2: CJC-1295, KLOW80", vendor: "Lee Lucy", cost: 538, paid: 833, profit: 295, carrier: "Fedex" },
+            { month: "January 2026", date: "01/17/26", customer: "Aiden Essipov", status: "In Transport", items: "RT10: Retatrutide, CU100: GHK-Cu, BAC 3ml", vendor: "Lee Lucy", cost: 180, paid: 406, profit: 226, carrier: "Fedex" },
+            { month: "January 2026", date: "01/17/26", customer: "Kj Ripley", status: "In Transport", items: "BAC 3ml, CD2: CJC-1295 (With DAC)", vendor: "Lee Lucy", cost: 127, paid: 250, profit: 123, carrier: "Fedex" },
+            { month: "January 2026", date: "01/17/26", customer: "Anita Zhuo", status: "In Transport", items: "RT10: Retatrutide", vendor: "SubQ", cost: 100, paid: 252, profit: 152, carrier: "Fedex" },
+            { month: "January 2026", date: "01/19/26", customer: "Angela Schell", status: "In Transport", items: "RT10: Retatrutide", vendor: "Me", cost: 9.75, paid: 60, profit: 50.25, carrier: "USPS" },
+            { month: "January 2026", date: "01/19/26", customer: "Reco", status: "In Transport", items: "N/A", vendor: "N/A", cost: 0, paid: 0, profit: 0, carrier: "Fedex" },
+            
+            // Misc Expenses from bottom of sheet
+            { month: "January 2026", date: "N/A", customer: "EXPENSE: SHIPPING", status: "Paid", items: "Shipping Costs", vendor: "Me", cost: 31, paid: 0, profit: -31, carrier: "N/A" },
+            { month: "January 2026", date: "N/A", customer: "EXPENSE: PEPTIDES", status: "Paid", items: "Inventory", vendor: "Me", cost: 462, paid: 0, profit: -462, carrier: "N/A" }
+        ];
+
+        // --- 2. Application Logic ---
+
+        const formatCurrency = (num) => {
+            return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(num);
+        };
+
+        function calculateStats(data) {
+            let rev = 0;
+            let exp = 0;
+            let profit = 0;
+
+            data.forEach(row => {
+                // If paid > 0 add to revenue
+                if(row.paid > 0) rev += row.paid;
+                // If cost > 0 add to expense
+                if(row.cost > 0) exp += row.cost;
+                // Sum profit
+                profit += row.profit;
+            });
+
+            document.getElementById('totalRevenue').innerText = formatCurrency(rev);
+            document.getElementById('totalExpense').innerText = formatCurrency(exp);
+            document.getElementById('totalProfit').innerText = formatCurrency(profit);
+            
+            // Avoid divide by zero
+            let margin = rev > 0 ? ((profit / rev) * 100).toFixed(2) : 0;
+            document.getElementById('profitMargin').innerText = margin + "%";
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            const filterMonth = document.getElementById('monthFilter').value;
+            
+            tableBody.innerHTML = "";
+
+            const filteredData = filterMonth === "All" 
+                ? orderData 
+                : orderData.filter(row => row.month === filterMonth);
+
+            // Update stats based on what is currently viewed? 
+            // Usually stats should be global or filtered. Let's make stats reflect the filter.
+            calculateStats(filteredData);
+
+            filteredData.forEach((row, index) => {
+                let statusClass = "";
+                if(row.status.includes("Delivered")) statusClass = "status-delivered";
+                else if(row.status.includes("Transport")) statusClass = "status-transport";
+                else statusClass = "status-pending";
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${row.date}</td>
+                    <td>
+                        <strong>${row.customer}</strong><br>
+                        <span style="font-size:0.8em; color: #888;">${row.carrier}</span>
+                    </td>
+                    <td><span class="status-badge ${statusClass}">${row.status}</span></td>
+                    <td style="max-width: 250px;">${row.items}</td>
+                    <td>${row.vendor}</td>
+                    <td style="color: #ff6b6b;">${formatCurrency(row.cost)}</td>
+                    <td style="color: #4ecdc4;">${formatCurrency(row.paid)}</td>
+                    <td style="font-weight:bold; color: ${row.profit >= 0 ? 'var(--success)' : 'var(--danger)'}">${formatCurrency(row.profit)}</td>
+                    <td><button class="action-btn" onclick="deleteRow(${index})">×</button></td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
+
+        function deleteRow(index) {
+            if(confirm('Are you sure you want to delete this record?')) {
+                orderData.splice(index, 1);
+                renderTable();
+            }
+        }
+
+        // --- 3. Save / Load Logic ---
+
+        function exportData() {
+            const dataStr = JSON.stringify(orderData, null, 2);
+            const blob = new Blob([dataStr], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = "ZhuoYue_Data_" + new Date().toISOString().slice(0,10) + ".json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function loadData(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const json = JSON.parse(e.target.result);
+                    orderData = json;
+                    renderTable();
+                    alert("Data imported successfully!");
+                } catch (err) {
+                    alert("Error reading file. Make sure it is a valid JSON file.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        // --- Init ---
+        // Run on startup
+        renderTable();
+
+    </script>
+</body>
+</html>
