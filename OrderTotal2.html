@@ -54,7 +54,7 @@
       font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 22px;
+      padding: clamp(12px, 3vw, 22px);
       position: relative;
       overflow-x: hidden;
     }
@@ -284,7 +284,10 @@
       color: rgba(255,255,255,0.85);
       font-weight: 900;
     }
-    .cardBody{ padding: 16px; }
+    .cardBody{
+      padding: 16px;
+      overflow-x: auto;
+    }
 
     label{
       display:block;
@@ -643,8 +646,8 @@
       box-shadow: 0 18px 45px rgba(0,0,0,0.55);
       display: grid;
       gap: 14px;
-      max-height: calc(100vh - 48px);
-      overflow: hidden;
+      max-height: none;
+      overflow: auto;
     }
     .homeTop{
       display:flex;
@@ -712,6 +715,17 @@
       .btnRow{ grid-template-columns: 1fr; }
       .ordersGrid{ grid-template-columns: 1fr; }
       .rName{ max-width: 520px; }
+    }
+    @media (max-width: 768px){
+      .homeInner{
+        padding: 14px;
+        gap: 12px;
+      }
+      .homeHeroImg img{ border-radius: 12px; }
+      .homeActions{ grid-template-columns: 1fr; }
+      .sideTotals{ width: 100%; }
+      .cardBody{ padding: 14px; }
+      .homeIntro{ padding: 14px; }
     }
   </style>
 </head>
