@@ -15,9 +15,13 @@
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
   <style>
+    /* Enforce a clean, readable font across the site */
+    *{
+      font-family: 'Inter', sans-serif !important;
+    }
     :root{
       --bg:#0b0d10;
       --panel: rgba(255,255,255,0.06);
@@ -29,6 +33,7 @@
       --brand:#e40000;
       --brand2:#ff2a2a;
       --bad:#ff4d4d;
+      --good:#22c55e;
       --shadow: 0 18px 45px rgba(0,0,0,0.45);
       --shadow2: 0 10px 25px rgba(0,0,0,0.35);
       --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
@@ -42,12 +47,15 @@
     /* FIX: remove bottom red bar by keeping glow top-focused and fading to solid bg */
     body{
       margin:0;
-      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      font-family: 'Playfair Display', serif;
+      font-size: 16px;
+      line-height: 1.5;
       background: var(--bg);
       color: var(--text);
-      padding: 22px;
+      padding: clamp(12px, 3vw, 22px);
       position: relative;
       overflow-x: hidden;
+      overflow-y: auto;
     }
     body::before{
       content:"";
@@ -102,17 +110,24 @@
       z-index:1;
     }
     .brandTitle{
-      font-family: Montserrat, Inter, sans-serif;
       font-weight: 900;
       letter-spacing: 0.5px;
-      font-size: 24px;
-      line-height: 1.12;
+      font-size: 26px;
+      line-height: 1.2;
       margin:0;
       text-transform: uppercase;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .brandTitle img{
+      max-height: 44px;
+      width: auto;
+      display:block;
     }
     .brandSub{
       margin-top: 7px;
-      font-size: 12px;
+      font-size: 13px;
       color: rgba(255,255,255,0.86);
       display:flex;
       gap:10px;
@@ -135,15 +150,20 @@
 
     .logoSlot{
       width: 88px;
-      height: 44px;
-      border-radius: 12px;
+      height: 88px;
+      border-radius: 50%;
       border: 1px solid rgba(255,255,255,0.22);
       background: rgba(0,0,0,0.18);
       overflow:hidden;
       flex-shrink:0;
-      display:none;
+      display:none !important; /* icon/pfp hidden */
     }
-    .logoSlot img{ width:100%; height:100%; object-fit: contain; display:block; padding:6px; }
+    .logoSlot img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
+    }
 
     .heroSlot{
       margin-top: 10px;
@@ -166,14 +186,21 @@
       z-index:1;
     }
     .mini{
-      font-size: 11px;
-      color: rgba(255,255,255,0.75);
+      font-size: 12px;
+      color: rgba(255,255,255,0.78);
       font-family: var(--mono);
+    }
+    #stepRotator{
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.55;
+      color: rgba(255,255,255,0.92);
     }
 
     .sideTotals{
       width: 420px;
       min-width: 320px;
+      max-width: 100%;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -207,13 +234,12 @@
       padding: 14px;
     }
     .totTitle{
-      font-family: Montserrat, Inter, sans-serif;
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      font-size: 12px;
-      color: rgba(255,255,255,0.82);
-      margin: 0 0 10px 0;
+      font-size: 14px;
+      color: rgba(255,255,255,0.86);
+      margin: 0 0 12px 0;
       display:flex;
       align-items:center;
       justify-content: space-between;
@@ -221,9 +247,9 @@
     }
     .totTable{ width:100%; border-collapse: collapse; margin:0; }
     .totTable td{
-      padding: 7px 0;
+      padding: 8px 0;
       border:0;
-      font-size: 12px;
+      font-size: 13px;
       color: rgba(255,255,255,0.80);
       vertical-align: top;
     }
@@ -231,16 +257,15 @@
       text-align:right;
       font-family: var(--mono);
       font-weight: 900;
-      font-size: 13px;
-      color: rgba(255,255,255,0.92);
+      font-size: 14px;
+      color: rgba(255,255,255,0.94);
       white-space: nowrap;
     }
     .bigNumber{
-      font-family: Montserrat, Inter, sans-serif;
       font-weight: 900;
       letter-spacing: 0.5px;
-      font-size: 24px;
-      margin-top: 8px;
+      font-size: 26px;
+      margin-top: 10px;
       color: rgba(255,255,255,0.96);
     }
 
@@ -262,21 +287,29 @@
       flex-wrap: wrap;
     }
     .cardHeader h2{
-      font-family: Montserrat, Inter, sans-serif;
       margin:0;
-      font-size: 13px;
+      font-size: 14px;
       letter-spacing: 0.6px;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.85);
+      color: rgba(255,255,255,0.90);
       font-weight: 900;
     }
-    .cardBody{ padding: 16px; }
+    .cardBody{
+      padding: 16px;
+      overflow-x: auto;
+    }
+    .cardBody > div{
+      margin-bottom: 12px;
+    }
+    .cardBody > div:last-child{
+      margin-bottom: 0;
+    }
 
     label{
       display:block;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 900;
-      color: rgba(255,255,255,0.78);
+      color: rgba(255,255,255,0.82);
       margin-bottom: 6px;
     }
 
@@ -286,10 +319,10 @@
       border: 1px solid rgba(255,255,255,0.16);
       border-radius: 12px;
       color: var(--text);
-      padding: 10px 11px;
+      padding: 12px 12px;
       outline:none;
       transition: box-shadow .12s ease, border-color .12s ease;
-      font-size: 13px;
+      font-size: 15px;
     }
     input:focus, textarea:focus{
       border-color: rgba(228,0,0,0.55);
@@ -306,9 +339,9 @@
       border: 1px solid rgba(255,255,255,0.16);
       border-radius: 12px;
       color: var(--text);
-      padding: 10px 11px;
+      padding: 12px 12px;
       outline:none;
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 700;
       appearance: none;
       background-image: linear-gradient(45deg, transparent 50%, rgba(255,255,255,0.6) 50%), linear-gradient(135deg, rgba(255,255,255,0.6) 50%, transparent 50%);
@@ -425,24 +458,24 @@
       border-radius: 14px;
       border: 1px solid rgba(255,255,255,0.10);
     }
+    .ordersGrid table{ min-width: 640px; }
     thead th{
       text-align:left;
-      font-size: 12px;
-      color: rgba(255,255,255,0.78);
+      font-size: 13px;
+      color: rgba(255,255,255,0.84);
       font-weight: 900;
-      padding: 12px 12px;
+      padding: 13px 12px;
       background: rgba(255,255,255,0.06);
       border-bottom: 1px solid rgba(255,255,255,0.10);
       letter-spacing: 0.4px;
       text-transform: uppercase;
-      font-family: Montserrat, Inter, sans-serif;
       white-space: nowrap;
     }
     tbody td{
-      padding: 10px 12px;
+      padding: 11px 12px;
       border-bottom: 1px solid rgba(255,255,255,0.08);
       vertical-align: middle;
-      font-size: 13px;
+      font-size: 14px;
     }
     tbody tr:hover{ background: rgba(255,255,255,0.03); }
 
@@ -510,20 +543,20 @@
     button{
       border: 0;
       border-radius: 14px;
-      padding: 12px 12px;
+      padding: 13px 12px;
       cursor:pointer;
       font-weight: 900;
       letter-spacing: 0.4px;
       text-transform: uppercase;
-      font-family: Montserrat, Inter, sans-serif;
-      font-size: 12px;
+      font-size: 13px;
       transition: transform .06s ease, filter .12s ease;
       user-select:none;
       white-space: nowrap;
     }
     button:active{ transform: translateY(1px); }
     .btnPrimary{ background: linear-gradient(135deg, var(--brand), var(--brand2)); color:white; }
-    .btnAlt{ background: linear-gradient(135deg, rgba(120,80,255,0.95), rgba(120,80,255,0.65)); color: white; }
+    .btnAlt{ background: linear-gradient(135deg, #b30000, #ff2a2a); color: white; }
+    .btnSuccess{ background: linear-gradient(135deg, #22c55e, #16a34a); color: white; }
     .btnGhost{
       background: rgba(0,0,0,0.22);
       border: 1px solid rgba(255,255,255,0.14);
@@ -552,9 +585,10 @@
       width: 10px;
       height: 10px;
       border-radius: 50%;
-      background: var(--brand);
+      background: var(--good);
       flex-shrink:0;
     }
+    .toast.error .dot{ background: var(--bad); }
     .toast .msg{
       overflow:hidden;
       white-space:nowrap;
@@ -598,6 +632,125 @@
       color: rgba(255,255,255,0.92);
       font-weight: 800;
     }
+    .homeIntro{
+      position: fixed;
+      inset: 0;
+      z-index: 13000;
+      background: radial-gradient(1200px 600px at 20% -10%, rgba(228,0,0,0.3), transparent 60%), var(--bg);
+      display: grid;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 0;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .homeBg{
+      position:absolute;
+      inset:0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0.35;
+      filter: blur(4px);
+      transition: background-image 0.6s ease;
+    }
+    .homeInner{
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1200px;
+      background: rgba(12,14,18,0.78);
+      border: 0;
+      border-radius: 0;
+      padding: 0 20px 20px;
+      box-shadow: none;
+      display: grid;
+      gap: 14px;
+      max-height: none;
+      overflow: auto;
+      margin: 0 auto;
+    }
+    .homeTop{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 12px;
+      padding: 12px 0;
+    }
+    .homeActionsTop{
+      display:flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .homeBrandMark{
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .homeLogo{
+      height: 52px;
+      width: 52px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .homeSlogan{
+      height: 42px;
+      width: auto;
+      object-fit: contain;
+      opacity: 0.95;
+    }
+    .homeHeroImg{
+      display:grid;
+      gap: 10px;
+      padding-top: 0;
+    }
+    .homeHeroImg img{
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: var(--shadow2);
+    }
+    .homeActions{
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .footer{
+      margin: 18px auto 0;
+      text-align: center;
+    }
+    .footerImageWrap{
+      margin: 22px auto;
+      max-width: 1180px;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,0.12);
+      box-shadow: var(--shadow2);
+    }
+    .footerImageWrap img{
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+    .footerInner{
+      display:inline-flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+      padding:12px 16px;
+      border-radius:12px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.82);
+      font-size: 12px;
+      box-shadow: var(--shadow2);
+    }
+    .footerInner strong{
+      font-family: Montserrat, Inter, sans-serif;
+      letter-spacing: 0.4px;
+      font-size: 13px;
+      text-transform: uppercase;
+    }
 
     @media (max-width: 980px){
       .topbar{ flex-direction: column; }
@@ -607,21 +760,68 @@
       .ordersGrid{ grid-template-columns: 1fr; }
       .rName{ max-width: 520px; }
     }
+    @media (max-width: 768px){
+      .homeInner{
+        padding: 14px;
+        gap: 12px;
+      }
+      .homeHeroImg img{ border-radius: 12px; }
+      .homeActions{ grid-template-columns: 1fr; }
+      .sideTotals{ width: 100%; }
+      .cardBody{ padding: 14px; }
+      .homeIntro{ padding: 14px; }
+      .ordersGrid table{ min-width: 560px; }
+      .brandTitle img{ max-height: 36px; }
+      .badge{ font-size: 10px; padding: 4px 6px; }
+      .bigNumber{ font-size: 20px; }
+      .btnRow button, button{ width: 100%; }
+    }
+    @media (max-width: 520px){
+      .wrap{ width: 100%; }
+      .ordersGrid table{ min-width: 500px; }
+      .totTable td{ font-size: 11px; }
+      .homeLogo{ height: 44px; width: 44px; }
+      .homeSlogan{ height: 34px; }
+      .brandTitle img{ max-height: 32px; }
+    }
   </style>
 </head>
 
 <body>
-  <div class="wrap">
+  <div class="homeIntro" id="homeIntro">
+    <div class="homeBg" id="homeBg"></div>
+      <div class="homeInner">
+        <div class="homeTop">
+          <div class="homeBrandMark">
+            <img class="homeLogo" src="zyl-logo.png" alt="Zhuo Yue Labs logo" />
+            <img class="homeSlogan" src="slogan.png" alt="Zhuo Yue Labs slogan" />
+          </div>
+          <div class="homeActionsTop">
+            <button class="btnPrimary" id="homeStartBtn2">Order</button>
+            <button class="btnAlt" id="viewProductsBtn">Our Products</button>
+            <button class="btnSuccess" id="joinDiscordBtn">Join Community</button>
+          </div>
+        </div>
+        <div class="homeHeroImg">
+          <img src="homepage1.png" alt="Zhuo Yue Labs homepage banner 1" />
+          <img src="homepage2.png" alt="Zhuo Yue Labs homepage banner 2" />
+          <img src="homepage3.png" alt="Zhuo Yue Labs homepage banner 3" />
+        </div>
+      </div>
+    </div>
+
+  <div class="wrap" id="orderApp" style="display:none;">
     <div class="topbar">
       <div class="brand">
         <div class="brandTop">
           <div>
-            <h1 class="brandTitle">Zhuo Yue Labs Ordering Site</h1>
+            <h1 class="brandTitle" aria-label="Zhuo Yue Labs"><img src="sloganred.png" alt="Zhuo Yue Labs" /></h1>
             <div class="brandSub"></div>
           </div>
           <div class="logoSlot" id="logoSlot">
             <img id="logoImg" alt="ZYL Logo" />
           </div>
+          <button class="btnGhost" id="homeBtn" style="margin-left:auto;">Home</button>
         </div>
 
         <div class="heroSlot" id="heroSlot">
@@ -660,20 +860,14 @@
           <div class="mini" id="itemCount">0 items</div>
 
           <div class="btnRow" style="margin-top: 12px;">
-            <button class="btnPrimary" id="pdfBtn">PDF Invoice</button>
-            <button class="btnAlt" id="submitBtn">Submit Order</button>
+            <button class="btnSuccess" id="submitBtn">Submit Order</button>
             <button class="btnGhost" id="clearAllBtn">Clear Both Carts</button>
           </div>
         </div>
 
         <div class="divider"></div>
 
-        <div class="mini">
-          How do I order???<br/>
-          👇 Step 1: Pick Your Items — scroll down to Individual Vials or Kits and use the ➕ to add items.<br/>
-          ✍️ Step 2: Enter Info — fill out Your Information and pick your Country 🌍 so shipping calculates correctly.<br/>
-          ✅ Step 3: Submit — check Total Due (top right) then hit the purple SUBMIT ORDER button! 🟣
-        </div>
+        <div class="mini" id="stepRotator" style="min-height: 42px;"></div>
       </div>
     </div>
 
@@ -689,9 +883,25 @@
             <input type="text" id="cName" placeholder="John Doe" />
           </div>
           <div>
-            <label>Contact (Phone/Email)</label>
-            <input type="text" id="cContact" placeholder="+1 ... / email" required />
+            <label>Phone (required)</label>
+            <input type="tel" id="cPhone" placeholder="+1 ..." required />
           </div>
+        </div>
+        <div>
+          <label>Email (optional)</label>
+          <input type="email" id="cEmail" placeholder="you@example.com" />
+        </div>
+        <div>
+          <label>Who sent you?</label>
+          <select id="cReferral" class="countrySelect">
+            <option value="">No one</option>
+            <option value="Locke">Locke</option>
+            <option value="Natty Sux">Natty Sux</option>
+            <option value="GK">GK</option>
+            <option value="Adonis">Adonis</option>
+            <option value="Kristan">Kristan</option>
+            <option value="WD 40 Sauce">WD 40 Sauce</option>
+          </select>
         </div>
         <div class="row2">
           <div>
@@ -717,7 +927,7 @@
           </div>
         </div>
         <div>
-          <label>Notes (optional)</label>
+          <label>Notes or Questions (Optional)</label>
           <textarea id="cNotes" rows="2" placeholder="Any notes for your invoice…"></textarea>
         </div>
       </div>
@@ -756,16 +966,13 @@
             <button class="btnAlt" id="clearIndBtn">Clear Individual</button>
           </div>
 
-          <div class="helpLine" style="margin-top:10px;">
-            Individual cart is separate from Kits cart, but totals + invoice combine both.
-          </div>
         </div>
       </div>
 
       <!-- KITS WINDOW -->
       <div class="card">
       <div class="cardHeader">
-        <h2>Kits—10 vials in each</h2>
+        <h2>Kits (1 Kit = 10 Vials)</h2>
         <div class="mini">Type to Search</div>
         </div>
         <div class="cardBody">
@@ -794,10 +1001,15 @@
           </div>
 
           <div class="helpLine" style="margin-top:10px;">
-            Kits are separate items priced per kit (quantity = number of kits).
           </div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <div class="footer" id="pageFooter">
+    <div class="footerImageWrap">
+      <img src="homepage3.png" alt="Zhuo Yue Labs footer graphic" />
     </div>
   </div>
 
@@ -809,7 +1021,7 @@
   <div class="overlay" id="orderOverlay">
     <div class="overlayBg" id="overlayBg"></div>
     <div class="overlayContent">
-      <div class="overlayText">🎉 Order received — thank you!<br/>A representative from +1 (605) 630-6296 will contact you shortly to finalize payment and confirm the details.</div>
+      <div class="overlayText">🎉 Order received — thank you!<br/>A representative from +1 (605) 630-6296 will contact you shortly via iMessage if it's a US number, or WhatsApp if it's an international order, to finalize payment and confirm the details!</div>
       <div class="btnRow">
         <button class="btnAlt" id="newOrderBtn">Submit New Order</button>
         <button class="btnGhost" id="backBtn">Go back</button>
@@ -836,10 +1048,12 @@
     if (!Number.isFinite(n)) n = min;
     return Math.min(Math.max(n, min), max);
   }
-  function toast(msg){
+  function toast(msg, type="info"){
     const t = document.getElementById("toast");
     const m = document.getElementById("toastMsg");
     m.textContent = msg;
+    t.classList.remove("error");
+    if (type === "error") t.classList.add("error");
     t.style.display = "flex";
     clearTimeout(toast._timer);
     toast._timer = setTimeout(() => { t.style.display = "none"; }, 1600);
@@ -870,17 +1084,18 @@
      OPTIONAL IMAGE AUTO-LOAD
   ----------------------------- */
   (function tryLoadImages(){
+    // logo intentionally hidden
     const logo = document.getElementById("logoImg");
     const logoSlot = document.getElementById("logoSlot");
-    logo.onload = () => { logoSlot.style.display = "block"; };
-    logo.onerror = () => { logoSlot.style.display = "none"; };
-    logo.src = "zyl-logo.png";
+    if (logo && logoSlot){
+      logoSlot.style.display = "none";
+    }
 
     const hero = document.getElementById("heroImg");
     const heroSlot = document.getElementById("heroSlot");
     hero.onload = () => { heroSlot.style.display = "block"; };
     hero.onerror = () => { heroSlot.style.display = "none"; };
-    hero.src = "zyl-banner.png";
+    hero.src = "homepage1.png";
   })();
 
   /* -----------------------------
@@ -893,7 +1108,7 @@
 
   try{
     if (window.emailjs && emailjs.init){
-      emailjs.init("KTNdzoK5C_9WtBjT1"); // <-- replace in production
+      emailjs.init("KTNdzoK5C_9WtBjT1"); // <-- replace with your EmailJS public key
     }
   } catch(_e){}
 
@@ -1178,7 +1393,9 @@
 
     // info
     cName: document.getElementById("cName"),
-    cContact: document.getElementById("cContact"),
+    cPhone: document.getElementById("cPhone"),
+    cEmail: document.getElementById("cEmail"),
+    cReferral: document.getElementById("cReferral"),
     cAddress: document.getElementById("cAddress"),
     cNotes: document.getElementById("cNotes"),
     shipInput: document.getElementById("shipInput"),
@@ -1197,7 +1414,6 @@
     clearKitBtn: document.getElementById("clearKitBtn"),
 
     // global
-    pdfBtn: document.getElementById("pdfBtn"),
     clearAllBtn: document.getElementById("clearAllBtn"),
     submitBtn: document.getElementById("submitBtn"),
     overlay: document.getElementById("orderOverlay"),
@@ -1210,15 +1426,15 @@
      VALIDATION (Contact required)
   ----------------------------- */
   function requireContact(){
-    const contact = (els.cContact.value || "").trim();
-    if (contact){
-      els.cContact.classList.remove("inputError");
-      return contact;
+    const phone = (els.cPhone.value || "").trim();
+    if (phone){
+      els.cPhone.classList.remove("inputError");
+      return phone;
     }
-    els.cContact.classList.add("inputError");
-    toast("Please enter a contact number/email");
-    els.cContact.focus();
-    setTimeout(() => els.cContact.classList.remove("inputError"), 1400);
+    els.cPhone.classList.add("inputError");
+    toast("Please enter a phone number", "error");
+    els.cPhone.focus();
+    setTimeout(() => els.cPhone.classList.remove("inputError"), 1400);
     return "";
   }
 
@@ -1241,7 +1457,9 @@
       kit: Array.from(cartKit.values()),
       info: {
         name: (els.cName.value || "").trim(),
-        contact: (els.cContact.value || "").trim(),
+        phone: (els.cPhone.value || "").trim(),
+        email: (els.cEmail.value || "").trim(),
+        referral: (els.cReferral.value || "").trim(),
         address: (els.cAddress.value || "").trim(),
         notes: (els.cNotes.value || "").trim(),
         country: (els.countrySelect.value || "US")
@@ -1262,6 +1480,7 @@
             sku: String(it.sku),
             name: String(it.name || ""),
             price: nnum(it.price),
+            cost: nnum(it.cost),
             qty: clampInt(it.qty, 1, 999)
           });
         });
@@ -1273,13 +1492,16 @@
             sku: String(it.sku),
             name: String(it.name || ""),
             price: nnum(it.price),
+            cost: nnum(it.cost),
             qty: clampInt(it.qty, 1, 999)
           });
         });
       }
       if (obj && obj.info){
         els.cName.value = obj.info.name || "";
-        els.cContact.value = obj.info.contact || "";
+        els.cPhone.value = obj.info.phone || "";
+        els.cEmail.value = obj.info.email || "";
+        els.cReferral.value = obj.info.referral || "";
         els.cAddress.value = obj.info.address || "";
         els.cNotes.value = obj.info.notes || "";
         if (obj.info.country) els.countrySelect.value = obj.info.country;
@@ -1458,6 +1680,10 @@
     const s = String(sku || "");
     return catalog.find(it => String(it.sku) === s) || null;
   }
+  function getCostForSku(catalog, sku){
+    const found = getFromCatalog(catalog, sku);
+    return found ? nnum(found.cost) : 0;
+  }
 
   /* -----------------------------
      CART OPS (generic)
@@ -1467,15 +1693,18 @@
     if (!item) return false;
 
     const key = String(item.sku);
+    const costVal = nnum(item.cost);
     if (cart.has(key)){
       const ex = cart.get(key);
       ex.qty = clampInt(ex.qty + 1, 1, 999);
+      if (!Number.isFinite(ex.cost)) ex.cost = costVal;
       cart.set(key, ex);
     } else {
       cart.set(key, {
         sku: key,
         name: String(item.name),
         price: nnum(item.price),
+        cost: costVal,
         qty: 1
       });
     }
@@ -1624,11 +1853,30 @@
   function computeTotals(){
     const ind = subtotalOf(cartInd);
     const kit = subtotalOf(cartKit);
-    const shipping = shippingRate;
     const itemsSubtotal = ind.subtotal + kit.subtotal;
+    const shipping = itemsSubtotal > 0 ? shippingRate : 0;
     const total = itemsSubtotal + shipping;
     const count = ind.count + kit.count;
     return { ind, kit, itemsSubtotal, shipping, total, count };
+  }
+
+  function computeProfit(){
+    let revenue = 0;
+    let cost = 0;
+    function addCart(cart, catalog){
+      for (const it of cart.values()){
+        const q = clampInt(it.qty, 1, 999);
+        const price = nnum(it.price);
+        const unitCost = Number.isFinite(it.cost) ? nnum(it.cost) : getCostForSku(catalog, it.sku);
+        revenue += price * q;
+        cost += unitCost * q;
+      }
+    }
+    addCart(cartInd, CATALOG_INDIVIDUAL);
+    addCart(cartKit, CATALOG_KITS);
+    const profit = revenue - cost;
+    const margin = revenue > 0 ? (profit / revenue) * 100 : 0;
+    return { revenue, cost, profit, margin };
   }
 
   function renderTotals(){
@@ -1637,10 +1885,11 @@
     els.subKit.textContent = money(t.kit.subtotal);
     els.subAll.textContent = money(t.itemsSubtotal);
     els.shipLine.textContent = money(t.shipping);
+    els.shipInput.value = t.shipping.toFixed(2);
     els.totalDue.textContent = money(t.total);
     els.bigTotal.textContent = money(t.total);
     els.itemCount.textContent = t.count + (t.count === 1 ? " item" : " items");
-    els.shipBadge.textContent = "Shipping: " + money(shippingRate);
+    els.shipBadge.textContent = "Shipping: " + money(t.shipping);
   }
 
   function renderAll(){
@@ -1649,44 +1898,104 @@
     renderTotals();
   }
 
+  /* -----------------------------
+     ROTATE STEPS
+  ----------------------------- */
+  const stepMsgs = [
+    "How do I order???",
+    "Step 1: Pick your items below! 📦",
+    "Step 2: Enter your information. 📝",
+    "Step 3: Submit! Then a representative will reach out 👩🏻‍💻🎧"
+  ];
+  function startStepRotator(){
+    const el = document.getElementById("stepRotator");
+    if (!el) return;
+    let idx = 0;
+    el.textContent = stepMsgs[idx];
+    setInterval(() => {
+      idx = (idx + 1) % stepMsgs.length;
+      el.textContent = stepMsgs[idx];
+    }, 2600);
+  }
+
   function buildOrderSummary(){
     const name = (els.cName.value || "").trim() || "Client";
-    const contact = (els.cContact.value || "").trim();
+    const contact = (els.cPhone.value || "").trim();
+    const email = (els.cEmail.value || "").trim();
+    const referral = (els.cReferral.value || "").trim();
     const address = (els.cAddress.value || "").trim();
     const notes = (els.cNotes.value || "").trim();
     const totals = computeTotals();
+    const profit = computeProfit();
     const indItems = Array.from(cartInd.values()).sort((a,b) => String(a.sku).localeCompare(String(b.sku)));
     const kitItems = Array.from(cartKit.values()).sort((a,b) => String(a.sku).localeCompare(String(b.sku)));
 
+    const itemLines = [];
+    function pushItems(label, arr){
+      if (!arr.length) return;
+      itemLines.push(`${label}:`);
+      arr.forEach(it => {
+        const q = clampInt(it.qty, 1, 999);
+        const line = money(nnum(it.price) * q);
+        itemLines.push(`${it.sku} x${q} — ${it.name} @ ${money(it.price)} = ${line}`);
+      });
+      itemLines.push("");
+    }
+
+    pushItems("Individual", indItems);
+    pushItems("Kits", kitItems);
+
+    const itemsList = itemLines.length ? itemLines.join("\n").trim() : "(no items)";
+
     const lines = [];
-    lines.push(`Customer: ${name}`);
-    lines.push(`Contact: ${contact || "N/A"}`);
+    lines.push("ORDER SUMMARY");
+    lines.push("");
+    lines.push("Customer Details");
+    lines.push("");
+    lines.push(`Name: ${name}`);
+    lines.push(`Phone: ${contact || "N/A"}`);
+    if (email) lines.push(`Email: ${email}`);
+    if (referral) lines.push(`Referral: ${referral}`);
     if (address) lines.push(`Address: ${address}`);
+    if (notes) lines.push(`Notes: ${notes}`);
+    lines.push("");
+    lines.push("Order Items");
+    lines.push("");
+    lines.push("Kits:");
+    if (kitItems.length){
+      kitItems.forEach(it => {
+        const q = clampInt(it.qty, 1, 999);
+        const line = money(nnum(it.price) * q);
+        lines.push(`${q}x ${it.name} — ${line}`);
+      });
+    } else {
+      lines.push("- (none)");
+    }
+    lines.push("");
+    lines.push("Individual Items:");
+    if (indItems.length){
+      indItems.forEach(it => {
+        const q = clampInt(it.qty, 1, 999);
+        const line = money(nnum(it.price) * q);
+        lines.push(`${q}x ${it.name} — ${line}`);
+      });
+    } else {
+      lines.push("- (none)");
+    }
+    lines.push("");
+    lines.push("Payment Breakdown");
+    lines.push("");
     lines.push(`Individual Subtotal: ${money(totals.ind.subtotal)}`);
     lines.push(`Kits Subtotal: ${money(totals.kit.subtotal)}`);
     lines.push(`Items Subtotal: ${money(totals.itemsSubtotal)}`);
     lines.push(`Shipping: ${money(totals.shipping)}`);
-    lines.push(`Total Due: ${money(totals.total)}`);
-
-    function pushItems(label, arr){
-      lines.push(`\n${label}:`);
-      if (!arr.length){
-        lines.push(" - (none)");
-        return;
-      }
-      arr.forEach(it => {
-        const q = clampInt(it.qty, 1, 999);
-        const line = money(nnum(it.price) * q);
-        lines.push(` - ${it.sku} x${q} — ${it.name} = ${line}`);
-      });
-    }
-
-    pushItems("Individual Items", indItems);
-    pushItems("Kits", kitItems);
-
-    if (notes){
-      lines.push(`\nNotes: ${notes}`);
-    }
+    lines.push(`TOTAL DUE: ${money(totals.total)}`);
+    lines.push("");
+    lines.push("Internal (not shown to customer)");
+    lines.push(`Items Revenue: ${money(profit.revenue)}`);
+    lines.push(`Items Cost: ${money(profit.cost)}`);
+    lines.push(`Profit: ${money(profit.profit)}`);
+    lines.push(`Margin: ${profit.margin.toFixed(1)}%`);
 
     return lines.join("\n");
   }
@@ -1749,7 +2058,8 @@
 
     const dateStr = new Date().toLocaleDateString();
     const name = (els.cName.value || "").trim() || "Client";
-    const contact = (els.cContact.value || "").trim();
+    const contact = (els.cPhone.value || "").trim();
+    const email = (els.cEmail.value || "").trim();
     const address = (els.cAddress.value || "").trim();
     const notes = (els.cNotes.value || "").trim();
 
@@ -1808,6 +2118,12 @@
     if (contact){
       doc.setTextColor(60,60,60);
       doc.text(String(contact), 14, yCursor);
+      yCursor += 5;
+      doc.setTextColor(0,0,0);
+    }
+    if (email){
+      doc.setTextColor(60,60,60);
+      doc.text(String(email), 14, yCursor);
       yCursor += 5;
       doc.setTextColor(0,0,0);
     }
@@ -1930,30 +2246,29 @@
     if (!contact) return;
 
     if (cartInd.size === 0 && cartKit.size === 0){
-      toast("Add at least one item first");
+      toast("Add at least one item first", "error");
       return;
     }
     if (!window.emailjs || !emailjs.send){
-      toast("Email service unavailable");
+      toast("Email service unavailable", "error");
       return;
     }
 
-    const name = (els.cName.value || "").trim() || "Client";
-    const orderSummary = buildOrderSummary();
+    const message = buildOrderSummary();
 
     toast("Sending...");
     try{
       await emailjs.send("service_188im68", "template_m6msd8i", {
-        message: orderSummary,
+        message,
         to_name: "Admin",
-        from_name: name,
-        contact: contact
+        from_name: (els.cName.value || "").trim() || "Client",
+        contact
       });
       toast("Order Sent!");
       showOverlay();
     } catch(err){
       console.error(err);
-      toast("Send failed — try again");
+      toast("Send failed — try again", "error");
     }
   }
 
@@ -1966,12 +2281,17 @@
     loadPersisted();
     setCountryShipping(els.countrySelect.value || "US");
     renderAll();
+    document.getElementById("orderApp").style.display = "block";
+    document.body.style.overflow = "hidden";
+    startStepRotator();
 
     // persist info fields on edit
     ["input","change"].forEach(evt => {
       els.cName.addEventListener(evt, persist);
-      els.cContact.addEventListener(evt, persist);
       els.cAddress.addEventListener(evt, persist);
+      els.cReferral.addEventListener(evt, persist);
+      els.cPhone.addEventListener(evt, persist);
+      els.cEmail.addEventListener(evt, persist);
       els.cNotes.addEventListener(evt, persist);
     });
     els.countrySelect.addEventListener("change", persist);
@@ -1997,13 +2317,13 @@
   els.clearAllBtn.addEventListener("click", clearBoth);
   els.countrySelect.addEventListener("change", (e) => setCountryShipping(e.target.value));
 
-  els.pdfBtn.addEventListener("click", () => downloadPDF());
   els.submitBtn.addEventListener("click", () => submitOrder());
   els.backBtn.addEventListener("click", hideOverlay);
   els.newOrderBtn.addEventListener("click", () => {
     clearBoth();
     els.cName.value = "";
-    els.cContact.value = "";
+    if (els.cPhone) els.cPhone.value = "";
+    if (els.cEmail) els.cEmail.value = "";
     els.cAddress.value = "";
     els.cNotes.value = "";
     els.countrySelect.value = "US";
@@ -2011,15 +2331,25 @@
     renderAll();
     hideOverlay();
   });
+  const homeIntro = document.getElementById("homeIntro");
+  const homeStartBtn2 = document.getElementById("homeStartBtn2");
+  const homeBtn = document.getElementById("homeBtn");
+  const viewProductsBtn = document.getElementById("viewProductsBtn");
+  const joinDiscordBtn = document.getElementById("joinDiscordBtn");
+  homeStartBtn2.addEventListener("click", () => {
+    homeIntro.style.display = "none";
+    document.body.style.overflow = "";
+  });
+  homeBtn.addEventListener("click", () => {
+    window.location.href = "./BackupOrder.html";
+  });
+  viewProductsBtn.addEventListener("click", () => {
+    window.location.href = "products.html";
+  });
+  joinDiscordBtn.addEventListener("click", () => {
+    window.location.href = "https://discord.gg/fYrKFqGQuM";
+  });
 
-  /*
-    After you paste this:
-    - Replace YOUR_PUBLIC_KEY
-    - Replace YOUR_SERVICE_ID
-    - Replace YOUR_TEMPLATE_ID
-    In EmailJS template body include: {{message}}
-    In "Reply To" field use: {{contact}}
-  */
 </script>
 </body>
 </html>
